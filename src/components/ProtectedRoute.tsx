@@ -17,6 +17,16 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     };
 
     checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        router.push('/login');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [router, supabase.auth]);
 
   return <>{children}</>;

@@ -20,8 +20,12 @@ const generateSecurePassword = () => {
 };
 
 export default function LoginPage() {
-  const supabase = useSupabase();
   const router = useRouter();
+  const supabase = useSupabase();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<Step>('name');
   const [messages, setMessages] = useState<Message[]>([
     { 
@@ -41,6 +45,28 @@ export default function LoginPage() {
         isBot 
       }
     ]);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      router.push('/dashboard');
+      router.refresh();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmit = async (value: string) => {
