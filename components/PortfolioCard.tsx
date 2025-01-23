@@ -9,11 +9,11 @@ import { cn } from "@/lib/utils";
 import { filterConfig } from '@/lib/config';
 
 interface PortfolioCardProps {
-  id: string;
-  title: string;
+    id: string;
+    title: string;
   description: string;
-  shortDescription: string;
-  imageUrl: string;
+    shortDescription: string;
+    imageUrl: string;
   type: string;
   tags: Array<{
     id: string;
@@ -21,8 +21,41 @@ interface PortfolioCardProps {
     color: string;
   }>;
   aiKeywords?: Array<string>;
-  slug: string;
+    slug: string;
 }
+
+const filterConfig = {
+  'ALL': {
+    label: 'ALL',
+    bgColor: 'bg-blue-50/90 hover:bg-blue-100/90',
+    textColor: 'text-blue-700',
+    borderColor: 'border-blue-200/50'
+  },
+  'PROJECT': {
+    label: 'PROJECT',
+    bgColor: 'bg-emerald-50/90 hover:bg-emerald-100/90',
+    textColor: 'text-emerald-700',
+    borderColor: 'border-emerald-200/50'
+  },
+  'PROPOSAL': {
+    label: 'PROPOSAL',
+    bgColor: 'bg-amber-50/90 hover:bg-amber-100/90',
+    textColor: 'text-amber-700',
+    borderColor: 'border-amber-200/50'
+  },
+  'RESEARCH': {
+    label: 'RESEARCH',
+    bgColor: 'bg-purple-50/90 hover:bg-purple-100/90',
+    textColor: 'text-purple-700',
+    borderColor: 'border-purple-200/50'
+  },
+  'DASHBOARD': {
+    label: 'DASHBOARD',
+    bgColor: 'bg-rose-50/90 hover:bg-rose-100/90',
+    textColor: 'text-rose-700',
+    borderColor: 'border-rose-200/50'
+  }
+} as const;
 
 export default function PortfolioCard({
   title,
@@ -46,11 +79,10 @@ export default function PortfolioCard({
               {imageUrl && <img src={imageUrl} alt={title} className="card-image" />}
               <div className={cn(
                 "absolute top-4 left-4 px-3 py-1.5 rounded-full",
-                typeConfig?.bgColor || "bg-neutral-50/80",
-                typeConfig?.textColor || "text-neutral-700",
-                "text-[0.65rem] font-medium tracking-wider uppercase",
-                "border",
-                typeConfig?.borderColor || "border-neutral-200/50"
+                filterConfig[type as keyof typeof filterConfig]?.bgColor || 'bg-gray-50/90 hover:bg-gray-100/90',
+                filterConfig[type as keyof typeof filterConfig]?.textColor || 'text-gray-700',
+                filterConfig[type as keyof typeof filterConfig]?.borderColor || 'border-gray-200/50',
+                "text-[0.65rem] font-medium tracking-wider uppercase border backdrop-blur-sm"
               )}>
                 {type}
               </div>

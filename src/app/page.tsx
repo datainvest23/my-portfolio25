@@ -68,7 +68,7 @@ export default function Page() {
             words={["Engage", "Inspire", "Perform", "Scale"]} 
             className="text-blue-600 font-semibold"
           />.
-        </h1>
+      </h1>
       </div>
       
       <div className="filter-buttons">
