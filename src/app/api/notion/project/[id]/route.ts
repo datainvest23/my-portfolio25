@@ -1,49 +1,31 @@
-import { NextResponse } from 'next/server';
-import { getDatabase } from '@/app/lib/notion';
+import { NextRequest } from 'next/server';
+import { notFound } from 'next/navigation';
+import { Client } from '@notionhq/client';
+import { NotionPage } from '@/types/notion';
+
+const notion = new Client({
+  auth: process.env.NOTION_API_KEY,
+});
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const databaseId = process.env.NOTION_DATABASE_ID!;
-    const pages = await getDatabase(databaseId);
-    
-    // Find the page that matches our slug
-    const page = pages.find((page: any) => {
-      const slug = page.properties.Slug?.rich_text[0]?.plain_text;
-      return slug === params.id;
+    const response = await notion.pages.retrieve({
+      page_id: params.id,
     });
 
-    if (!page) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+    if (!response) {
+      notFound();
     }
 
-    // Get the image URL from the Image property
-    let imageUrl = null;
-    const imageProperty = page.properties.Image;
-    
-    if (imageProperty && imageProperty.files && imageProperty.files.length > 0) {
-      const file = imageProperty.files[0];
-      if (file.type === 'external') {
-        imageUrl = file.external.url;
-      } else if (file.type === 'file') {
-        imageUrl = file.file.url;
-      }
-    }
+    // Type assertion since we know the structure
+    const page = response as NotionPage;
 
-    return NextResponse.json({
-      id: page.id,
-      cover_image: imageUrl,
-    });
+    return Response.json(page);
   } catch (error) {
-    console.error('Error fetching project details:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch project details' },
-      { status: 500 }
-    );
+    console.error('Error fetching project:', error);
+    return new Response('Failed to fetch project', { status: 500 });
   }
 } 
