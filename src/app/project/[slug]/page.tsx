@@ -268,8 +268,16 @@ export default async function ProjectPage({ params }: PageProps) {
                 {/* Interest Button */}
                 <div className="mb-6">
                   <InterestButton 
-                    projectId={params.slug} 
-                    projectName={projectName} 
+                    project={{
+                      id: page.id,
+                      name: page.properties.Name.title[0]?.plain_text,
+                      imageUrl: page.cover?.external?.url || page.cover?.file?.url,
+                      shortDescription: page.properties['Short Description']?.rich_text[0]?.plain_text,
+                      longDescription: page.properties.Description?.rich_text[0]?.plain_text,
+                      type: page.properties.Type?.select?.name,
+                      tags: page.properties.Technologies?.multi_select || [],
+                      slug: page.properties.Slug?.rich_text[0]?.plain_text || page.id
+                    }} 
                   />
                 </div>
 

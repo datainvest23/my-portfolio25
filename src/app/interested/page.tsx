@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSupabase } from '@/providers/SupabaseProvider';
 import Link from 'next/link';
+import Image from 'next/image';
 import { XCircleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 
@@ -11,6 +12,15 @@ type InterestedItem = {
   portfolio_item_id: string;
   project_name: string;
   created_at: string;
+  cover_image?: string;
+  image_url?: string;
+  project_details?: {
+    description?: string;
+    shortDescription?: string;
+    type?: string;
+    tags?: any[];
+    slug?: string;
+  };
 };
 
 export default function InterestedPage() {
@@ -19,22 +29,33 @@ export default function InterestedPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setLoading(false);
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from('user_interests')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
+      const { data: userInterests, error: interestsError } = await supabase
+        .from('user_interests')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching interested items:', error);
-      return;
+      if (interestsError) {
+        console.error('Error fetching user interests:', interestsError);
+        toast.error('Failed to load interested items');
+        setLoading(false);
+        return;
+      }
+
+      setItems(userInterests);
+    } catch (error) {
+      console.error('Error in fetchItems:', error);
+      toast.error('Something went wrong while loading your interested items');
+    } finally {
+      setLoading(false);
     }
-
-    setItems(data || []);
-    setLoading(false);
   };
 
   const removeItem = async (itemId: string, projectName: string) => {
@@ -74,50 +95,73 @@ export default function InterestedPage() {
   }
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-8">Your Interested Projects</h1>
-      
-      {items.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-600">No projects marked as interested yet.</p>
-          <Link href="/" className="text-blue-600 hover:underline mt-2 inline-block">
-            Browse Projects
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="group p-4 border rounded-lg shadow-sm hover:shadow-md transition-all bg-white relative"
-            >
-              <div className="flex justify-between items-center">
-                <Link
-                  href={`/project/${item.portfolio_item_id}`}
-                  className="text-blue-600 hover:text-blue-800 font-medium flex-grow"
-                >
-                  {item.project_name || 'Unknown Project'}
-                </Link>
-                
-                <button
-                  onClick={() => removeItem(item.id, item.project_name)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-4 p-1 
-                    text-gray-400 hover:text-red-500 rounded-full 
-                    hover:bg-red-50 focus:outline-none focus:ring-2 
-                    focus:ring-red-500 focus:ring-offset-2"
-                  title="Remove from interested"
-                >
-                  <XCircleIcon className="w-5 h-5" />
-                </button>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">Interested Projects</h1>
+      <div className="space-y-4">
+        {loading ? (
+          <div>Loading...</div>
+        ) : items.length === 0 ? (
+          <div>No interested items yet.</div>
+        ) : (
+          <div className="space-y-4">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="group hover:shadow-lg rounded-lg p-6 
+                  transition-all duration-200 bg-white relative"
+              >
+                <div className="flex gap-6">
+                  <div className="flex-shrink-0 w-48 h-32 relative rounded-lg overflow-hidden bg-gray-100">
+                    {item.image_url ? (
+                      <Image
+                        src={item.image_url}
+                        alt={item.project_name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <span className="text-sm">No image</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-grow">
+                    <Link 
+                      href={`/project/${item.project_details?.slug || item.portfolio_item_id}`}
+                      className="text-blue-600 hover:text-blue-800 font-medium 
+                        text-lg hover:underline"
+                    >
+                      {item.project_name}
+                    </Link>
+                    
+                    <div className="text-sm text-gray-500 mt-2">
+                      Added on {new Date(item.created_at).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => removeItem(item.id, item.project_name)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity 
+                      p-2 text-gray-400 hover:text-red-500 rounded-full 
+                      hover:bg-red-50 focus:outline-none focus:ring-2 
+                      focus:ring-red-500 focus:ring-offset-2"
+                    title="Remove from interested"
+                  >
+                    <XCircleIcon className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
-              
-              <div className="text-sm text-gray-500 mt-1">
-                Added on {new Date(item.created_at).toLocaleDateString()}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 } 

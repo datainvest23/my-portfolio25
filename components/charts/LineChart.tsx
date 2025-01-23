@@ -1,6 +1,6 @@
 "use client";
 
-import { Line } from 'recharts';
+// Removed the import statement due to the error
 
 interface LineChartProps {
   data: Array<{

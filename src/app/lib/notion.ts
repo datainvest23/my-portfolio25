@@ -113,3 +113,30 @@ export async function getBlocks(blockId: string) {
     return [];
   }
 }
+
+export async function getProjectDetails(pageId: string) {
+  try {
+    const response = await notion.pages.retrieve({
+      page_id: pageId
+    });
+
+    // Get the cover image URL from the Notion page
+    let coverImage = null;
+    if (response.cover) {
+      if ('external' in response.cover) {
+        coverImage = response.cover.external.url;
+      } else if ('file' in response.cover) {
+        coverImage = response.cover.file.url;
+      }
+    }
+
+    return {
+      id: response.id,
+      cover_image: coverImage,
+      // Add other properties as needed
+    };
+  } catch (error) {
+    console.error('Error fetching project details:', error);
+    return null;
+  }
+}

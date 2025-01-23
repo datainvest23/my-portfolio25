@@ -4,12 +4,22 @@ import { useState } from 'react';
 import { useSupabase } from '@/providers/SupabaseProvider';
 import { toast } from 'react-hot-toast';
 
-type InterestButtonProps = {
-  projectId: string;
-  projectName: string;
+type ProjectDetails = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  shortDescription?: string;
+  longDescription?: string;
+  type?: string;
+  tags?: any[];
+  slug: string;
 };
 
-export function InterestButton({ projectId, projectName }: InterestButtonProps) {
+type InterestButtonProps = {
+  project: ProjectDetails;
+};
+
+export function InterestButton({ project }: InterestButtonProps) {
   const supabase = useSupabase();
   const [isInterested, setIsInterested] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,8 +38,16 @@ export function InterestButton({ projectId, projectName }: InterestButtonProps) 
         .from('user_interests')
         .insert({
           user_id: session.user.id,
-          portfolio_item_id: projectId,
-          project_name: projectName
+          portfolio_item_id: project.id,
+          project_name: project.name,
+          image_url: project.imageUrl,
+          project_details: {
+            description: project.longDescription,
+            shortDescription: project.shortDescription,
+            type: project.type,
+            tags: project.tags,
+            slug: project.slug
+          }
         });
 
       if (error) {

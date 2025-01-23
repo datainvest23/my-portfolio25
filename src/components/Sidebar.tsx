@@ -51,13 +51,14 @@ export default function Sidebar() {
   return (
     <div 
       className={cn(
-        "fixed left-0 top-0 h-screen bg-white border-r transition-all duration-300 z-50",
-        isOpen ? "w-[200px]" : "w-[60px]"
+        "fixed left-0 top-0 h-full bg-white border-r transition-all duration-300 z-50",
+        isOpen ? "w-[200px]" : "w-[60px]",
+        "flex flex-col min-h-screen"
       )}
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <div className="flex flex-col h-full p-4">
+      <div className="sticky top-0 flex flex-col h-full p-4">
         {/* Logo and User Name */}
         <div className="mb-8">
           <Link href="/" className="flex items-center gap-2 py-1">

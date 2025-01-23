@@ -1,6 +1,5 @@
 "use client";
 
-import { Bar } from 'recharts';
 
 interface BarChartProps {
   data: Array<{
