@@ -1,10 +1,112 @@
 // src/app/project/[slug]/page.tsx
 import { getDatabase, getBlocks } from '@/lib/notion';
-import TableOfContents from '@/components/TableOfContents';
-import RelatedProjectCard from '@/components/RelatedProjectCard';
+import { TableOfContents } from '@/components/TableOfContents';
+import { RelatedProjectCard } from '@/components/RelatedProjectCard';
 import { InterestButton } from '@/components/InterestButton';
 import { AnimatedHeaderCard } from '@/components/AnimatedHeaderCard';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { NotionBlock } from '@/types/notion';
+
+function renderBlock(block: NotionBlock) {
+  const { type, id } = block;
+
+  switch (type) {
+    case 'paragraph':
+      if (!block.paragraph?.rich_text?.length) return null;
+      return (
+        <p className="mb-4">
+          {block.paragraph.rich_text.map((text, i) => (
+            <span key={i}>{text.plain_text}</span>
+          ))}
+        </p>
+      );
+
+    case 'heading_1':
+      if (!block.heading_1?.rich_text?.length) return null;
+      return (
+        <h1 id={id} className="text-3xl font-bold mb-4 mt-8">
+          {block.heading_1.rich_text[0].plain_text}
+        </h1>
+      );
+
+    case 'heading_2':
+      if (!block.heading_2?.rich_text?.length) return null;
+      return (
+        <h2 id={id} className="text-2xl font-bold mb-3 mt-6">
+          {block.heading_2.rich_text[0].plain_text}
+        </h2>
+      );
+
+    case 'heading_3':
+      if (!block.heading_3?.rich_text?.length) return null;
+      return (
+        <h3 id={id} className="text-xl font-semibold mb-2 mt-4">
+          {block.heading_3.rich_text[0].plain_text}
+        </h3>
+      );
+
+    case 'bulleted_list_item':
+      if (!block.bulleted_list_item?.rich_text?.length) return null;
+      return (
+        <li className="ml-6 mb-1 list-disc">
+          {block.bulleted_list_item.rich_text.map((text, i) => (
+            <span key={i}>{text.plain_text}</span>
+          ))}
+        </li>
+      );
+
+    case 'numbered_list_item':
+      if (!block.numbered_list_item?.rich_text?.length) return null;
+      return (
+        <li className="ml-6 mb-1 list-decimal">
+          {block.numbered_list_item.rich_text.map((text, i) => (
+            <span key={i}>{text.plain_text}</span>
+          ))}
+        </li>
+      );
+
+    case 'code':
+      if (!block.code?.rich_text?.length) return null;
+      return (
+        <pre className="bg-gray-100 p-4 rounded-lg mb-4 overflow-x-auto">
+          <code>
+            {block.code.rich_text.map((text, i) => (
+              <span key={i}>{text.plain_text}</span>
+            ))}
+          </code>
+        </pre>
+      );
+
+    case 'image':
+      const imageUrl = block.image?.type === 'external' 
+        ? block.image.external?.url 
+        : block.image.file?.url;
+
+      if (!imageUrl) return null;
+
+      return (
+        <div className="my-4">
+          <Image
+            src={imageUrl}
+            alt={block.image.caption?.[0]?.plain_text || 'Project image'}
+            width={800}
+            height={400}
+            className="rounded-lg"
+          />
+          {block.image.caption?.[0]?.plain_text && (
+            <p className="text-sm text-gray-500 mt-2">
+              {block.image.caption[0].plain_text}
+            </p>
+          )}
+        </div>
+      );
+
+    default:
+      console.warn('❌ Unsupported block type:', type);
+      return null;
+  }
+}
 
 interface PageProps {
   params: {
@@ -12,183 +114,14 @@ interface PageProps {
   };
 }
 
-function renderBlock(block: any) {
-  const { type, id } = block;
-  const value = block[type];
-
-  const renderRichText = (richText: any[]) => {
-    return richText.map((text: any, i: number) => {
-      const {
-        annotations: { bold, code, color, italic, strikethrough, underline },
-        text: { content, link }
-      } = text;
-      
-      const textContent = (
-        <span
-          key={i}
-          className={[
-            bold ? 'font-bold' : '',
-            code ? 'font-mono bg-gray-100 rounded px-1' : '',
-            italic ? 'italic' : '',
-            strikethrough ? 'line-through' : '',
-            underline ? 'underline' : '',
-          ].join(' ')}
-          style={color !== 'default' ? { color } : {}}
-        >
-          {content}
-        </span>
-      );
-
-      return link ? (
-        <a href={link.url} key={i} className="text-blue-600 hover:underline">
-          {textContent}
-        </a>
-      ) : textContent;
-    });
-  };
-
-  switch (type) {
-                case 'paragraph':
-                  return (
-        <p key={id} className="mb-4">
-          {renderRichText(value.rich_text)}
-                    </p>
-                  );
-
-                case 'heading_1':
-                  return (
-        <h1 id={id} key={id} className="text-3xl font-bold mt-8 mb-4">
-          {renderRichText(value.rich_text)}
-                    </h1>
-                  );
-
-                case 'heading_2':
-                  return (
-        <h2 id={id} key={id} className="text-2xl font-bold mt-6 mb-4">
-          {renderRichText(value.rich_text)}
-                    </h2>
-                  );
-
-                case 'heading_3':
-                  return (
-        <h3 id={id} key={id} className="text-xl font-bold mt-4 mb-3">
-          {renderRichText(value.rich_text)}
-                    </h3>
-                  );
-
-    case 'bulleted_list_item':
-                case 'numbered_list_item':
-      const listItem = (
-        <li key={id} className="ml-4">
-          {renderRichText(value.rich_text)}
-          {value.children?.map((block: any) => (
-            <div key={block.id} className="ml-6 mt-2">
-              {renderBlock(block)}
-            </div>
-          ))}
-                      </li>
-      );
-
-      // Group consecutive list items
-      if (type === 'bulleted_list_item') {
-        return <ul className="list-disc mb-4">{listItem}</ul>;
-      }
-      return <ol className="list-decimal mb-4">{listItem}</ol>;
-    
-    case 'image':
-      const src = value.type === 'external' ? value.external.url : value.file.url;
-      const caption = value.caption?.length ? renderRichText(value.caption) : '';
-                  return (
-        <figure key={id} className="my-8">
-          <img src={src} alt={caption} className="rounded-lg w-full" />
-          {caption && (
-            <figcaption className="text-center text-sm text-gray-500 mt-2">
-              {caption}
-            </figcaption>
-          )}
-        </figure>
-                  );
-
-                case 'code':
-                  return (
-        <pre key={id} className="bg-gray-800 text-white p-4 rounded-lg my-4 overflow-x-auto">
-          <code className="text-sm font-mono">
-            {value.rich_text[0].plain_text}
-                      </code>
-                    </pre>
-                  );
-
-                case 'quote':
-                  return (
-        <blockquote key={id} className="border-l-4 border-gray-300 pl-4 py-1 my-4 italic text-gray-700">
-          {renderRichText(value.rich_text)}
-                    </blockquote>
-                  );
-    
-    case 'divider':
-      return <hr key={id} className="my-8 border-gray-200" />;
-
-                case 'callout':
-                  return (
-        <div key={id} className="bg-gray-50 rounded-lg p-4 my-4 flex items-start">
-          {value.icon?.emoji && (
-            <div className="mr-4 text-xl">{value.icon.emoji}</div>
-          )}
-          <div>{renderRichText(value.rich_text)}</div>
-                      </div>
-      );
-
-    case 'table':
-      return (
-        <div key={id} className="my-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <tbody className="divide-y divide-gray-200">
-              {value.children?.map((row: any) => (
-                <tr key={row.id}>
-                  {row.table_row.cells.map((cell: any[], i: number) => (
-                    <td key={i} className="px-4 py-2 whitespace-nowrap">
-                      {renderRichText(cell)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-                    </div>
-                  );
-
-    default:
-      console.log(`❌ Unsupported block type: ${type}`);
-      return null;
-  }
-}
-
-function extractHeadings(blocks: any[]) {
-  return blocks
-    .filter((block: any) => block.type === 'heading_2' || block.type === 'heading_3')
-    .map((block: any) => ({
-      id: block.id,
-      text: block[block.type].rich_text[0]?.plain_text || '',
-      level: parseInt(block.type.slice(-1))
-    }));
-}
-
-function getRandomProjects(database: any[], currentSlug: string, count = 3) {
-  const otherProjects = database.filter(
-    (project: any) => 
-      project.properties.Slug.rich_text[0]?.plain_text !== currentSlug
-  );
-  
-  const shuffled = [...otherProjects].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
 export default async function ProjectPage({ params }: PageProps) {
   try {
+    // Await params.slug
+    const slug = await Promise.resolve(params.slug);
     const database = await getDatabase(process.env.NOTION_DATABASE_ID!);
     
-    const page = database.find((page: any) => {
-      return page.properties.Slug.rich_text[0]?.plain_text === params.slug;
+    const page = database.find((page) => {
+      return page.properties.Slug.rich_text[0]?.plain_text === slug;
     });
 
     if (!page) {
@@ -196,124 +129,67 @@ export default async function ProjectPage({ params }: PageProps) {
     }
 
     const blocks = await getBlocks(page.id);
-    const headings = extractHeadings(blocks);
-    const projectName = page.properties.Name.title[0]?.plain_text;
-    const projectDescription = page.properties['Short Description']?.rich_text[0]?.plain_text;
-    const projectTechnologies = page.properties.Technologies?.multi_select || [];
-    const relatedProjects = getRandomProjects(database, params.slug);
 
-                  return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="relative">
-          {/* Cover Image with Overlay Card */}
-          <div className="relative h-[400px] mb-8 rounded-xl overflow-hidden">
-            {page.cover?.external?.url && (
-              <div className="absolute inset-0">
-                <img 
-                  src={page.cover.external.url} 
-                  alt={projectName} 
-                  className="w-full h-full object-cover"
-                />
-                {/* Dark gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
-              </div>
-            )}
+    // Extract headings for table of contents
+    const headings = blocks
+      .filter(block => block.type === 'heading_2' || block.type === 'heading_3')
+      .map(block => ({
+        id: block.id,
+        text: block[block.type].rich_text[0].plain_text,
+        level: parseInt(block.type.slice(-1))
+      }));
 
-            {/* Project Info Card - Overlaid */}
-            <div className="absolute bottom-0 left-0 right-0 p-8">
-              <div className="max-w-3xl mx-auto">
-                <AnimatedHeaderCard
-                  title={projectName}
-                  description={projectDescription}
-                  projectTechnologies={projectTechnologies}
-                  className="bg-white/95 backdrop-blur-sm shadow-xl"
-                >
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                      {projectName}
-                    </h1>
-                    <p className="text-gray-600">
-                      {projectDescription}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {projectTechnologies.map((tech: any) => (
-                        <span
-                          key={tech.id}
-                          className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800"
-                        >
-                          {tech.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </AnimatedHeaderCard>
-              </div>
-            </div>
-          </div>
+    // Get related projects (same type)
+    const relatedProjects = database
+      .filter(p => 
+        p.id !== page.id && 
+        p.properties.Type.select?.name === page.properties.Type.select?.name
+      )
+      .slice(0, 3);
 
-          {/* Main Content with Sidebar */}
+    return (
+      <div>
+        <AnimatedHeaderCard
+          projectName={page.properties.Name.title[0].plain_text}
+          projectDescription={page.properties['Short Description'].rich_text[0].plain_text}
+          projectTechnologies={page.properties.Technologies.multi_select}
+        >
+          <InterestButton projectId={page.id} />
+        </AnimatedHeaderCard>
+
+        <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Main Content */}
             <div className="lg:col-span-3">
-              {blocks.map((block: any) => (
-                <div key={block.id} className="mb-6">
+              {blocks.map((block) => (
+                <div key={block.id}>
                   {renderBlock(block)}
                 </div>
               ))}
             </div>
 
-            {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-8 space-y-6">
-                {/* Interest Button */}
-                <div className="mb-6">
-                  <InterestButton 
-                    project={{
-                      id: page.id,
-                      name: page.properties.Name.title[0]?.plain_text,
-                      imageUrl: page.cover?.external?.url || page.cover?.file?.url,
-                      shortDescription: page.properties['Short Description']?.rich_text[0]?.plain_text,
-                      longDescription: page.properties.Description?.rich_text[0]?.plain_text,
-                      type: page.properties.Type?.select?.name,
-                      tags: page.properties.Technologies?.multi_select || [],
-                      slug: page.properties.Slug?.rich_text[0]?.plain_text || page.id
-                    }} 
-                  />
-                </div>
-
-                {/* Table of Contents */}
+              <div className="sticky top-8">
                 <TableOfContents headings={headings} />
               </div>
             </div>
           </div>
 
-          {/* Related Projects Section - Bottom */}
-          <div className="mt-16 border-t pt-8">
-            <h2 className="text-2xl font-bold mb-6">Related Projects</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {relatedProjects.map((project: any) => (
-                <RelatedProjectCard
-                  key={project.id}
-                  project={project}
-                  className="h-full" // Make cards equal height
-                />
-              ))}
+          {/* Related Projects */}
+          {relatedProjects.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold mb-8">Related Projects</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {relatedProjects.map((project) => (
+                  <RelatedProjectCard key={project.id} project={project} />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
   } catch (error) {
     console.error('Error loading project:', error);
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h2 className="text-red-800 font-semibold">Error Loading Project</h2>
-          <p className="text-red-600">
-            There was an error loading the project. Please try again later.
-          </p>
-      </div>
-    </div>
-  );
+    return <div>Failed to load project</div>;
   }
 }

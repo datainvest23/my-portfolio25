@@ -7,6 +7,7 @@ import { createThread } from '@/lib/openai';
 import { PostgrestError } from '@supabase/supabase-js';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Button } from "@/components/ui/button"
 
 type InterestedItem = {
   id: string;

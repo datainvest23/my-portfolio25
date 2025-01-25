@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { cn } from "@/lib/utils";
 
 interface TOCItem {
   id: string;
@@ -12,13 +13,15 @@ interface TableOfContentsProps {
   headings: TOCItem[];
 }
 
-export default function TableOfContents({ headings }: TableOfContentsProps) {
+export function TableOfContents({ headings }: TableOfContentsProps) {
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
+
+  if (headings.length === 0) return null;
 
   return (
     <div className="table-of-contents">
@@ -29,7 +32,7 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
             <li 
               key={heading.id}
               style={{ 
-                marginLeft: `${(heading.level - 1) * 1}rem`,
+                marginLeft: `${(heading.level - 2) * 1}rem`,
               }}
             >
               <button

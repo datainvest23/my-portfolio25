@@ -53,23 +53,64 @@ export const SidebarProvider = ({
   );
 };
 
-export const Sidebar = ({
-  children,
-  open,
-  setOpen,
-  animate,
-}: {
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
-  open?: boolean;
-  setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
-  animate?: boolean;
-}) => {
+  side?: "left" | "right";
+  isOpen?: boolean;
+  onClose?: () => void;
+  overlay?: boolean;
+}
+
+export function Sidebar({
+  children,
+  side = "left",
+  isOpen = false,
+  onClose,
+  overlay = true,
+  className,
+  ...props
+}: SidebarProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
-    <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
-      {children}
-    </SidebarProvider>
+    <div
+      className={cn(
+        "fixed inset-0 z-50",
+        !isOpen && "pointer-events-none",
+        className
+      )}
+      {...props}
+    >
+      {overlay && (
+        <div
+          className={cn(
+            "absolute inset-0 bg-black/50",
+            "transition-opacity duration-300 ease-in-out",
+            isOpen ? "opacity-100" : "opacity-0"
+          )}
+          onClick={onClose}
+        />
+      )}
+      <div
+        className={cn(
+          "absolute top-0 bottom-0 w-[300px] bg-background",
+          "transition-transform duration-300 ease-in-out",
+          side === "left" ? "-translate-x-full" : "translate-x-full",
+          side === "left" ? "left-0" : "right-0",
+          isOpen && "translate-x-0"
+        )}
+      >
+        {children}
+      </div>
+    </div>
   );
-};
+}
 
 export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
   return (

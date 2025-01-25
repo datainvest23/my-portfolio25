@@ -2,12 +2,13 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import PortfolioCard from '../../components/PortfolioCard';
-import { Button } from '@/components/ui/3d-button';
+import PortfolioCard from '@/components/PortfolioCard';
+import { Button } from '@/components/ui/button';
 import { FlipWords } from "@/components/ui/flip-words";
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 import { cn } from "@/lib/utils";
 import { filterConfig, type FilterType } from '@/lib/config';
+import { toast } from 'react-hot-toast';
 
 // Define types for the project data
 interface Project {
@@ -27,51 +28,56 @@ interface Project {
 }
 
 export default function Page() {
-  const [activeFilter, setActiveFilter] = useState<FilterType>('ALL');
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('ALL');
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      setIsLoading(true);
+    async function fetchProjects() {
       try {
+        setIsLoading(true);
+        setError(null);
+        
         const response = await fetch(`/api/projects?type=${activeFilter}`);
-        if (!response.ok) throw new Error('Failed to fetch projects');
         const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.details || data.error || 'Failed to fetch projects');
+        }
+
         setProjects(data);
       } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to fetch projects';
         console.error('Error fetching projects:', error);
+        setError(message);
+        toast.error(message);
       } finally {
         setIsLoading(false);
       }
-    };
+    }
 
-    fetchProjects();
+    void fetchProjects();
   }, [activeFilter]);
 
   return (
-    <div className="container relative">
-      <div className="relative overflow-hidden rounded-lg">
-        <AnimatedGridPattern
-          numSquares={30}
-          maxOpacity={0.1}
-          duration={3}
-          repeatDelay={1}
-          className={cn(
-            "[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]",
-            "inset-x-0 inset-y-[-100%] h-[300%]",
-          )}
-        />
-        <h1 className="page-title text-4xl font-normal text-neutral-600 relative z-10">
-          Build solutions that{" "}
+    <div className="min-h-screen p-4">
+      {/* Hero section */}
+      <div className="relative overflow-hidden rounded-lg mb-8">
+        <AnimatedGridPattern />
+        <div className="relative z-10 px-4 py-12 text-center">
+          <h1 className="text-4xl font-bold mb-4">
+            Build solutions that <span className="text-blue-600">Perform</span>
+          </h1>
           <FlipWords 
-            words={["Engage", "Inspire", "Perform", "Scale"]} 
-            className="text-blue-600 font-semibold"
-          />.
-      </h1>
+            words={["Efficiently", "Reliably", "Securely"]}
+            className="text-xl text-gray-600"
+          />
+        </div>
       </div>
-      
-      <div className="filter-buttons">
+
+      {/* Filter buttons */}
+      <div className="flex flex-wrap gap-2 mb-8">
         {Object.entries(filterConfig).map(([key, config]) => (
           <Button
             key={key}
@@ -79,12 +85,12 @@ export default function Page() {
             onClick={() => setActiveFilter(key as FilterType)}
             className={cn(
               "font-medium transition-colors",
-              activeFilter === key 
-                ? config.bgColor
-                : "hover:bg-neutral-100/80",
-              config.textColor,
-              "border",
-              config.borderColor
+              activeFilter === key && [
+                config.bgColor,
+                config.textColor,
+                "border",
+                config.borderColor
+              ]
             )}
           >
             {config.label}
@@ -92,17 +98,36 @@ export default function Page() {
         ))}
       </div>
 
-      {isLoading ? (
-        <div className="loading">Loading...</div>
-      ) : (
-        <div className="portfolio-grid">
-          {projects.map((project) => (
-            <PortfolioCard
-              key={project.id}
-              {...project}
-            />
-          ))}
+      {/* Error state */}
+      {error && (
+        <div className="text-center py-8 text-red-600">
+          <p>{error}</p>
+          <Button 
+            variant="outline"
+            className="mt-4"
+            onClick={() => void fetchProjects()}
+          >
+            Try Again
+          </Button>
         </div>
+      )}
+
+      {/* Projects grid */}
+      {!error && (
+        isLoading ? (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <div className="loading">Loading...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <PortfolioCard
+                key={project.id}
+                project={project}
+              />
+            ))}
+          </div>
+        )
       )}
     </div>
   );
