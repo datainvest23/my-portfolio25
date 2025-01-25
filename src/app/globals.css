@@ -949,3 +949,35 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+.portfolio-card {
+  @apply relative w-full rounded-xl transition-all duration-300;
+  height: 400px;
+}
+
+.perspective {
+  perspective: 2000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.portfolio-grid {
+  @apply grid gap-6 mt-8;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.filter-buttons {
+  @apply flex flex-wrap gap-2 mt-8 mb-4;
+}
+
+/* Add any additional styles you need */

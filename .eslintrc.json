@@ -15,5 +15,10 @@
     "react-hooks/exhaustive-deps": "warn",
     "@next/next/no-img-element": "warn",
     "@typescript-eslint/no-empty-interface": "off"
+  },
+  "settings": {
+    "next": {
+      "rootDir": "src/"
+    }
   }
 } 

@@ -1,5 +1,4 @@
-import { NextRequest } from 'next/server';
-import { notFound } from 'next/navigation';
+import { NextRequest, NextResponse } from 'next/server';
 import { Client } from '@notionhq/client';
 import { NotionPage } from '@/types/notion';
 
@@ -9,23 +8,37 @@ const notion = new Client({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const response = await notion.pages.retrieve({
-      page_id: params.id,
+    const { id } = context.params;
+    const databaseId = process.env.NOTION_DATABASE_ID!;
+    
+    const response = await notion.databases.query({
+      database_id: databaseId,
+      filter: {
+        property: "Slug",
+        rich_text: {
+          equals: id
+        }
+      }
     });
 
-    if (!response) {
-      notFound();
+    if (!response.results.length) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
+      );
     }
 
-    // Type assertion since we know the structure
-    const page = response as NotionPage;
+    const page = response.results[0] as NotionPage;
 
-    return Response.json(page);
+    return NextResponse.json(page);
   } catch (error) {
     console.error('Error fetching project:', error);
-    return new Response('Failed to fetch project', { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch project' },
+      { status: 500 }
+    );
   }
 } 

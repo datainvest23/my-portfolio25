@@ -8,8 +8,7 @@ const nextConfig = {
     ],
   },
   eslint: {
-    ignoreDuringBuilds: false,
-    dirs: ['pages', 'components', 'lib', 'src']
+    dirs: ['src', 'components', 'lib']
   },
   typescript: {
     ignoreBuildErrors: false
