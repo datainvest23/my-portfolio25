@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useSupabase } from '@/providers/SupabaseProvider';
 import Link from 'next/link';
 import Image from 'next/image';
 import { XCircleIcon } from '@heroicons/react/24/outline';
@@ -24,48 +23,41 @@ type InterestedItem = {
 };
 
 export default function InterestedPage() {
-  const supabase = useSupabase();
   const [items, setItems] = useState<InterestedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      const response = await fetch('/api/interested');
+
+      if (!response.ok) {
+        console.error('Error fetching user interests:', response.statusText);
+          toast.error('Failed to load interested items');
         setLoading(false);
         return;
       }
 
-      const { data: userInterests, error: interestsError } = await supabase
-        .from('user_interests')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-
-      if (interestsError) {
-        console.error('Error fetching user interests:', interestsError);
-        toast.error('Failed to load interested items');
-        setLoading(false);
-        return;
-      }
-
-      setItems(userInterests);
+      const { interests } = await response.json();
+      setItems(interests);
+        
     } catch (error) {
-      console.error('Error in fetchItems:', error);
-      toast.error('Something went wrong while loading your interested items');
+        console.error('Error fetching data from /api/interested:', error);
+        toast.error('Something went wrong while loading your interested items');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
   const removeItem = async (itemId: string, projectName: string) => {
     try {
-      const { error } = await supabase
-        .from('user_interests')
-        .delete()
-        .eq('id', itemId);
+      const response = await fetch(`/api/interested?itemId=${itemId}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        toast.error('Failed to remove item. Please try again.');
+        return;
+      }
 
       setItems(items.filter(item => item.id !== itemId));
       toast.success(`Removed "${projectName}" from your interested list`);
@@ -77,7 +69,7 @@ export default function InterestedPage() {
 
   useEffect(() => {
     fetchItems();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (
@@ -164,4 +156,4 @@ export default function InterestedPage() {
       </div>
     </div>
   );
-} 
+}

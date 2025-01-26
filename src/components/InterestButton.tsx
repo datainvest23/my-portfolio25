@@ -4,22 +4,17 @@ import { useState } from 'react';
 import { useSupabase } from '@/providers/SupabaseProvider';
 import { toast } from 'react-hot-toast';
 
-type ProjectDetails = {
+interface ProjectDetails {
   id: string;
   name: string;
-  imageUrl: string;
+  imageUrl: string | null;
   shortDescription?: string;
-  longDescription?: string;
   type?: string;
-  tags?: any[];
+  tags?: Array<{ id: string; name: string; color: string }>;
   slug: string;
-};
+}
 
-type InterestButtonProps = {
-  project: ProjectDetails;
-};
-
-export function InterestButton({ project }: InterestButtonProps) {
+export function InterestButton({ project }: { project: ProjectDetails }) {
   const supabase = useSupabase();
   const [isInterested, setIsInterested] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,7 +37,6 @@ export function InterestButton({ project }: InterestButtonProps) {
           project_name: project.name,
           image_url: project.imageUrl,
           project_details: {
-            description: project.longDescription,
             shortDescription: project.shortDescription,
             type: project.type,
             tags: project.tags,
@@ -51,7 +45,7 @@ export function InterestButton({ project }: InterestButtonProps) {
         });
 
       if (error) {
-        if (error.code === '23505') { // Unique violation
+        if (error.code === '23505') { // Unique violation - user already interested
           toast.error('You have already marked this project as interesting');
         } else {
           throw error;

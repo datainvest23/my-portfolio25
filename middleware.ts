@@ -4,30 +4,28 @@ import type { NextRequest } from 'next/server';
 
 export const config = {
   matcher: [
-    '/api/chat',
-    '/api/interested/:path*',
-    '/interested',
-    '/portfolio/:path*'  // Added portfolio routes
-  ]
+    '/((?!_next/static|_next/image|favicon.ico).*)', // Protect all routes except static assets
+  ],
 };
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req: request, res });
+
   const { data: { session } } = await supabase.auth.getSession();
 
-  // Check if accessing protected route without session
-  if (!session) {
-    // If API request, return 401
+  // If no session and not on the login page, redirect to login
+  if (!session && !request.nextUrl.pathname.startsWith('/login')) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
+      // For API routes, return a 401 response
       return NextResponse.json(
         { error: 'Unauthorized', code: 'SESSION_REQUIRED' },
         { status: 401 }
       );
     }
-    // If page request, redirect to home for auth
-    return NextResponse.redirect(new URL('/', request.url));
+    // Redirect unauthenticated page requests to login
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return res;
-} 
+}

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface RelatedProjectCardProps {
   project: any;
@@ -18,10 +19,11 @@ export default function RelatedProjectCard({ project, className = '' }: RelatedP
           {/* Cover Image */}
           {project.cover?.external?.url ? (
             <>
-              <img 
+              <Image 
                 src={project.cover.external.url} 
-                alt={projectName}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                alt={projectName || 'Project cover'}
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
               {/* Permanent Dark Overlay */}
               <div className="absolute inset-0 bg-black/40" />

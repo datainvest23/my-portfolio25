@@ -74,7 +74,7 @@ export default function ConnectPage() {
     <ProtectedRoute>
       <div className="container max-w-4xl mx-auto py-8">
         <h1 className="text-3xl font-semibold text-center mb-8">
-          Let's Connect
+          Let&apos;s Connect
         </h1>
         
         <div className="bg-white rounded-lg shadow-lg p-6">

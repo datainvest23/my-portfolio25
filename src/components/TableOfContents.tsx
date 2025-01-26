@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 
 interface TOCItem {
   id: string;
@@ -9,16 +9,22 @@ interface TOCItem {
 }
 
 interface TableOfContentsProps {
-  headings: TOCItem[];
+  headings?: TOCItem[]; // Made optional to prevent runtime errors
 }
 
 export default function TableOfContents({ headings }: TableOfContentsProps) {
+  // Function to scroll smoothly to the heading
   const scrollToHeading = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  // Validate headings before rendering
+  if (!headings || !Array.isArray(headings) || headings.length === 0) {
+    return null; // Return null if headings are not valid
+  }
 
   return (
     <div className="table-of-contents">
@@ -26,10 +32,10 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
       <nav>
         <ul className="space-y-2">
           {headings.map((heading) => (
-            <li 
+            <li
               key={heading.id}
-              style={{ 
-                marginLeft: `${(heading.level - 1) * 1}rem`,
+              style={{
+                marginLeft: `${(heading.level - 1) * 1}rem`, // Indent based on heading level
               }}
             >
               <button
@@ -44,4 +50,4 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
       </nav>
     </div>
   );
-} 
+}

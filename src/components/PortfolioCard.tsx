@@ -27,7 +27,7 @@ export default function PortfolioCard(props: PortfolioCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   
   return (
-    <Link href={`/portfolio/${slug}`}>
+    <Link href={`/project/${slug}`}>
       <motion.div 
         className="portfolio-card group perspective"
         initial={{ opacity: 0, y: 20 }}
