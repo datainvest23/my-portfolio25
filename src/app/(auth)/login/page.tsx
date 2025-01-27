@@ -17,10 +17,10 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>('name');
   const [messages, setMessages] = useState<Message[]>([
-    {
+    { 
       id: 'welcome',
       text: "Hola. I appreciate your interest in my projects. What's your name?",
-      isBot: true
+      isBot: true 
     }
   ]);
   const [name, setName] = useState('');
@@ -38,10 +38,10 @@ export default function LoginPage() {
   const addMessage = (text: string, isBot: boolean) => {
     setMessages(prev => [
       ...prev,
-      {
+      { 
         id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        text,
-        isBot
+        text, 
+        isBot 
       }
     ]);
   };
@@ -78,7 +78,7 @@ export default function LoginPage() {
       setName(value);
       addMessage(value, false);
       await handleBotMessage(`Nice to meet you, ${value}! What's your email address?`);
-       setStep('email');
+        setStep('email');
     } else if (step === 'email') {
       const email = value;
       addMessage(email, false);
@@ -88,17 +88,17 @@ export default function LoginPage() {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password: Math.random().toString(36).slice(-8),
-          options: {
-            data: { name },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
+            options: {
+              data: { name },
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
+          });
 
-        if (signUpError) throw signUpError;
+          if (signUpError) throw signUpError;
 
           await handleBotMessage("Perfect! You're all set. Redirecting you to the portfolio...");
         setStep('complete');
-
+        
         setTimeout(() => {
           router.push('/');
           router.refresh();
@@ -129,25 +129,25 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md bg-transparent p-6 rounded-2xl">
         <div className="space-y-4 mb-6 max-h-[70vh] overflow-y-auto">
-             <AnimatePresence initial={false}>
-                    {messages.map((message) => (
-                         <motion.div
-                              key={message.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3 }}
-                        >
+            <AnimatePresence initial={false}>
+              {messages.map((message) => (
+                <motion.div
+                  key={message.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
                         <p className={`text-lg ${message.isBot ? 'text-yellow-300' : 'text-white'} font-medium mb-2`}>{message.text}</p>
-                        </motion.div>
-                    ))}
+                </motion.div>
+              ))}
                    <div ref={messagesEndRef} />
-                </AnimatePresence>
-        </div>
-       {step !== 'complete' && (
-         <AIInputWithLoading
-           onSubmit={handleSubmit}
-           loadingDuration={1500}
+            </AnimatePresence>
+          </div>
+          {step !== 'complete' && (
+            <AIInputWithLoading 
+              onSubmit={handleSubmit}
+              loadingDuration={1500}
            placeholder={step === 'name' ? 'INPUT: NAME' : 'INPUT: EMAIL'}
            className="bg-white/10 backdrop-blur-sm rounded-full text-white border border-gray-600 focus:border-yellow-500 focus:outline-none"
            inputRef={inputRef}
@@ -162,4 +162,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+} 

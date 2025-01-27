@@ -18,16 +18,16 @@ function renderBlock(block: any) {
   const value = block[type];
 
   switch (type) {
-    case 'paragraph':
+                case 'paragraph':
       return <p key={id}>{value.rich_text[0]?.plain_text}</p>;
-    case 'heading_1':
+                case 'heading_1':
       return <h1 key={id}>{value.rich_text[0]?.plain_text}</h1>;
-    case 'heading_2':
+                case 'heading_2':
       return <h2 key={id}>{value.rich_text[0]?.plain_text}</h2>;
-    case 'heading_3':
+                case 'heading_3':
       return <h3 key={id}>{value.rich_text[0]?.plain_text}</h3>;
     case 'bulleted_list_item':
-      return (
+                  return (
         <ul key={id}>
           <li>{value.rich_text[0]?.plain_text}</li>
         </ul>
@@ -96,7 +96,7 @@ export default async function ProjectPage({ params }: PageProps) {
     const projectCover =
       project.cover?.external?.url || project.cover?.file?.url || null;
 
-    return (
+                  return (
       <div className="container mx-auto px-4 py-8">
         {/* Main Content */}
         <div className="relative mb-8">
@@ -109,38 +109,38 @@ export default async function ProjectPage({ params }: PageProps) {
                 className="object-cover rounded-lg"
                 priority
               />
-            </div>
-          )}
+              </div>
+            )}
           <div className="mt-6">
             <h1 className="text-4xl font-bold mb-4">{projectName}</h1>
             <p className="text-lg text-gray-600">{projectDescription}</p>
             <div className="flex flex-wrap mt-4 gap-2">
-              {projectTechnologies.map((tech: any) => (
-                <span
-                  key={tech.id}
-                  className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800"
-                >
-                  {tech.name}
-                </span>
-              ))}
+                      {projectTechnologies.map((tech: any) => (
+                        <span
+                          key={tech.id}
+                          className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800"
+                        >
+                          {tech.name}
+                        </span>
+                      ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3">
-            {blocks.map((block: any) => (
-              <div key={block.id} className="mb-6">
-                {renderBlock(block)}
-              </div>
-            ))}
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-3">
+              {blocks.map((block: any) => (
+                <div key={block.id} className="mb-6">
+                  {renderBlock(block)}
+                </div>
+              ))}
+            </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
+            {/* Sidebar */}
+            <div className="lg:col-span-1">
             <TableOfContents headings={headings} />
-            <InterestButton
-              project={{
+                  <InterestButton 
+                    project={{
                 id: project.id,
                 name: projectName,
                 imageUrl: projectCover,
@@ -150,13 +150,13 @@ export default async function ProjectPage({ params }: PageProps) {
                 slug,
               }}
             />
+            </div>
           </div>
-        </div>
 
         {/* Related Projects Section */}
-        <div className="mt-16 border-t pt-8">
-          <h2 className="text-2xl font-bold mb-6">Related Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-16 border-t pt-8">
+            <h2 className="text-2xl font-bold mb-6">Related Projects</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {relatedProjects.map((related) => (
               <RelatedProjectCard key={related.id} project={related} />
             ))}
@@ -169,7 +169,7 @@ export default async function ProjectPage({ params }: PageProps) {
     return (
       <div className="container mx-auto px-4 py-8">
         <p className="text-red-500">Error loading project. Please try again later.</p>
-      </div>
-    );
+    </div>
+  );
   }
 }

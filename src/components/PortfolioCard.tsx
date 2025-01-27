@@ -46,9 +46,8 @@ export default function PortfolioCard(props: PortfolioCardProps) {
                         {/* Type Badge - Top Left */}
                         {type && (
                             <div className="absolute top-3 left-3 z-10">
-                                <span className="px-3 py-1 text-xs font-semibold rounded-full 
-                                    bg-blue-500/85 text-white backdrop-blur-sm
-                                    shadow-sm border border-white/20">
+                                <span className="px-3 py-1 text-xs font-medium rounded-full 
+                                    bg-white/90 text-gray-800 shadow-sm">
                                     {type}
                                 </span>
                             </div>

@@ -2,17 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { HomeIcon, BookmarkIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/providers/SupabaseProvider";
 
-export default function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function TopNav() {
   const supabase = useSupabase();
   const [userName, setUserName] = useState<string | null>(null);
 
-  // Fetch user data on component mount
   React.useEffect(() => {
     async function getUserProfile() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -27,88 +24,59 @@ export default function Sidebar() {
     {
       label: "Portfolio",
       href: "/",
-      icon: (
-        <HomeIcon className="h-5 w-5 flex-shrink-0" />
-      ),
+      icon: <HomeIcon className="h-5 w-5" />,
     },
     {
       label: "Interested",
       href: "/interested",
-      icon: (
-        <BookmarkIcon className="h-5 w-5 flex-shrink-0" />
-      ),
+      icon: <BookmarkIcon className="h-5 w-5" />,
       highlight: true,
     },
     {
       label: "Conversation",
       href: "/conversation",
-      icon: (
-        <ChatBubbleLeftRightIcon className="h-5 w-5 flex-shrink-0" />
-      ),
+      icon: <ChatBubbleLeftRightIcon className="h-5 w-5" />,
     },
   ];
   
   return (
-    <div 
-      className={cn(
-        "fixed left-0 top-0 h-full bg-white border-r transition-all duration-300 z-50",
-        isOpen ? "w-[200px]" : "w-[60px]",
-        "flex flex-col min-h-screen"
-      )}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
-    >
-      <div className="sticky top-0 flex flex-col h-full p-4">
-        {/* Logo and User Name */}
-        <div className="mb-8">
-          <Link href="/" className="flex items-center gap-2 py-1">
-            <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-            {isOpen && (
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="font-medium text-black whitespace-nowrap"
-              >
+    <header className="fixed top-0 left-0 right-0 bg-white border-b z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo and User Name */}
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-black rounded-lg flex-shrink-0" />
+              <span className="font-medium text-sm whitespace-nowrap">
                 {userName || 'Marc Muller'}
-              </motion.span>
-            )}
-          </Link>
-        </div>
+              </span>
+            </Link>
+          </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1">
-          <ul className="flex flex-col gap-2">
-            {links.map((link, idx) => (
-              <li key={idx}>
-                <Link
-                  href={link.href}
-                  className={cn(
-                    "flex items-center gap-3 p-2 rounded-lg transition-all",
-                    "text-neutral-600 hover:text-neutral-900",
-                    link.highlight && "bg-blue-50 hover:bg-blue-100",
-                    link.highlight && "text-blue-600 hover:text-blue-700"
-                  )}
-                >
-                  <span className={cn(
-                    link.highlight ? "text-blue-600" : "text-neutral-600"
-                  )}>
-                    {link.icon}
-                  </span>
-                  {isOpen && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="whitespace-nowrap text-sm font-medium"
-                    >
+          {/* Navigation Links */}
+          <nav>
+            <ul className="flex items-center gap-2">
+              {links.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-lg transition-all",
+                      "hover:bg-gray-100",
+                      link.highlight && "text-blue-600",
+                    )}
+                  >
+                    <span className="flex-shrink-0">{link.icon}</span>
+                    <span className="text-sm font-medium">
                       {link.label}
-                    </motion.span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
-    </div>
+    </header>
   );
 } 

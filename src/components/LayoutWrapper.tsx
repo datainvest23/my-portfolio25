@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
+import TopNav from '@/components/TopNav';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,12 +13,10 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 ml-[60px]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children}
-        </div>
+    <div className="min-h-screen">
+      <TopNav />
+      <main className="w-full">
+        {children}
       </main>
     </div>
   );
