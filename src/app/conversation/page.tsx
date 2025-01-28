@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useSupabase } from '@/providers/SupabaseProvider';
-import { ChatWindow } from '@/components/ChatWindow';
-import { createThread } from '@/lib/openai';
-import { PostgrestError } from '@supabase/supabase-js';
-import Image from 'next/image';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useSupabase } from "@/providers/SupabaseProvider";
+import { ChatWindow } from "@/components/ChatWindow";
+import { createThread } from "@/lib/openai";
+import { PostgrestError } from "@supabase/supabase-js";
+import Image from "next/image";
+import Link from "next/link";
+import { XMarkIcon, DocumentIcon } from "@heroicons/react/24/outline";
 
 type InterestedItem = {
   id: string;
@@ -37,10 +38,10 @@ export default function ConversationPage() {
       if (!session?.user) return;
 
       const { data: userInterests, error: interestsError } = await supabase
-        .from('user_interests')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
+        .from("user_interests")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
 
       if (!interestsError && userInterests) {
         setInterestedProjects(userInterests);
@@ -59,8 +60,8 @@ export default function ConversationPage() {
           "Welcome! I'm here to help you explore the projects. Feel free to ask questions about any project that interests you."
         );
       } catch (error) {
-        console.error('Error creating thread:', error);
-        setError('Failed to initialize chat');
+        console.error("Error creating thread:", error);
+        setError("Failed to initialize chat");
       } finally {
         setIsLoading(false);
       }
@@ -72,75 +73,91 @@ export default function ConversationPage() {
   if (error) {
     return (
       <div className="p-8">
-        <div className="text-red-600 bg-red-50 p-4 rounded-lg">
-          {error}
-        </div>
+        <div className="text-red-600 bg-red-50 p-4 rounded-lg">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Interested Projects Cards */}
-      {interestedProjects.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Your Interested Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {interestedProjects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow 
-                  duration-200 overflow-hidden border border-gray-100"
-              >
-                <div className="aspect-video relative">
-                  {project.image_url ? (
-                    <Image
-                      src={project.image_url}
-                      alt={project.project_name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                      <span className="text-gray-400">No image</span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <Link 
-                    href={`/project/${project.project_details?.slug || project.portfolio_item_id}`}
-                    className="text-lg font-medium text-gray-900 hover:text-blue-600 
-                      transition-colors duration-200"
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      {/* Interested Projects Section */}
+      <div className="flex-grow overflow-y-auto">
+        {interestedProjects.length > 0 && (
+          <div className="sticky top-0 bg-gray-50 z-10 border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <h2 className="text-xl font-semibold">Your Interested Projects</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                {interestedProjects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="group relative bg-white rounded-lg shadow-sm hover:shadow-md 
+                      transition-all duration-200 overflow-hidden border border-gray-100"
                   >
-                    {project.project_name}
-                  </Link>
-                  {project.project_details?.shortDescription && (
-                    <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                      {project.project_details.shortDescription}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => handleRemoveProject(project.id)}
+                      className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-white/80 
+                        backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity
+                        hover:bg-red-50 border border-red-100"
+                      aria-label="Remove project"
+                    >
+                      <XMarkIcon className="h-4 w-4 text-red-500" />
+                    </button>
 
-      {/* Chat Window */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Initializing chat...</p>
-          </div>
-        ) : threadId ? (
-          <ChatWindow threadId={threadId} initialMessage={initialMessage} />
-        ) : (
-          <div className="p-8 text-center text-gray-600">
-            Unable to initialize chat. Please try again later.
+                    {/* Project Link */}
+                    <Link 
+                      href={`/project/${project.project_details?.slug || project.portfolio_item_id}`}
+                      className="block"
+                    >
+                      {/* Image Container */}
+                      <div className="aspect-[4/3] relative">
+                        {project.image_url ? (
+                          <Image
+                            src={project.image_url}
+                            alt={project.project_name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, 25vw"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                            <DocumentIcon className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Title */}
+                      <div className="p-3">
+                        <h3 className="text-sm font-medium text-gray-900 line-clamp-1 
+                          group-hover:text-blue-600 transition-colors">
+                          {project.project_name}
+                        </h3>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
+      </div>
+
+      {/* Chat Section */}
+      <div className="flex-shrink-0 bg-white border-t border-gray-200">
+        <div className="max-w-4xl mx-auto h-[calc(100vh-300px)] md:h-[500px]">
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Initializing chat...</p>
+            </div>
+          ) : threadId ? (
+            <ChatWindow threadId={threadId} initialMessage={initialMessage} />
+          ) : (
+            <div className="p-8 text-center text-gray-600">
+              Unable to initialize chat. Please try again later.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

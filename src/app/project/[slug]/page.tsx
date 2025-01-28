@@ -183,38 +183,44 @@ export default async function ProjectPage({ params }: PageProps) {
     const projectCover =
       project.cover?.external?.url || project.cover?.file?.url || null;
 
-                  return (
-      <div className="container mx-auto px-4 py-8">
-        {/* Main Content */}
-        <div className="relative mb-8">
-          {projectCover && (
-            <div className="relative h-[300px] mb-8">
-              <Image
-                src={projectCover}
-                alt={projectName || 'Project cover'}
-                fill
-                className="object-cover rounded-lg"
-                priority
-              />
-              </div>
-            )}
-          <div className="mt-6">
-            <h1 className="text-4xl font-bold mb-4">{projectName}</h1>
-            <p className="text-lg text-gray-600">{projectDescription}</p>
-            <div className="flex flex-wrap mt-4 gap-2">
-                      {projectTechnologies.map((tech: any) => (
-                        <span
-                          key={tech.id}
-                          className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800"
-                        >
-                          {tech.name}
-                        </span>
-                      ))}
+    return (
+      <div className="min-h-screen">
+        {/* Full-width Cover Image */}
+        {projectCover && (
+          <div className="relative w-full h-[40vh] md:h-[50vh] mb-8">
+            <Image
+              src={projectCover}
+              alt={projectName || 'Project cover'}
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
+          </div>
+        )}
+
+        <div className="container mx-auto px-4 py-8">
+          {/* Project Header */}
+          <div className="relative -mt-20 mb-8">
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{projectName}</h1>
+              <p className="text-base md:text-lg text-gray-600">{projectDescription}</p>
+              <div className="flex flex-wrap mt-4 gap-2">
+                {projectTechnologies.map((tech: any) => (
+                  <span
+                    key={tech.id}
+                    className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800"
+                  >
+                    {tech.name}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
 
+          {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Main Content */}
             <div className="lg:col-span-3">
               <article className="prose prose-lg max-w-none prose-headings:font-work-sans prose-p:text-gray-600">
                 {blocks.map((block: any) => (
@@ -225,30 +231,44 @@ export default async function ProjectPage({ params }: PageProps) {
               </article>
             </div>
 
-            {/* Sidebar */}
+            {/* Sticky Sidebar */}
             <div className="lg:col-span-1">
-            <TableOfContents headings={headings} />
-                  <InterestButton 
-                    project={{
-                id: project.id,
-                name: projectName,
-                imageUrl: projectCover,
-                shortDescription: projectDescription,
-                type: project.properties?.Type?.select?.name,
-                tags: projectTechnologies,
-                slug,
-              }}
-            />
+              <div className="sticky top-20 space-y-6">
+                {/* Interest Button - Always visible */}
+                <InterestButton 
+                  project={{
+                    id: project.id,
+                    name: projectName,
+                    imageUrl: projectCover,
+                    shortDescription: projectDescription,
+                    type: project.properties?.Type?.select?.name,
+                    tags: projectTechnologies,
+                    slug,
+                  }}
+                />
+                
+                {/* Table of Contents - Hidden on mobile */}
+                <div className="hidden lg:block">
+                  <TableOfContents headings={headings} />
+                </div>
+              </div>
             </div>
           </div>
 
-        {/* Related Projects Section */}
-          <div className="mt-16 border-t pt-8">
+          {/* Related Projects Section */}
+          <div className="mt-16 pt-8 border-t">
             <h2 className="text-2xl font-bold mb-6">Related Projects</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedProjects.map((related) => (
-              <RelatedProjectCard key={related.id} project={related} />
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {relatedProjects && relatedProjects.length > 0 ? (
+                relatedProjects.map((related) => (
+                  <RelatedProjectCard key={related.id} project={related} />
+                ))
+              ) : (
+                <p className="text-gray-500 col-span-full text-center py-8">
+                  No related projects found
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -258,7 +278,7 @@ export default async function ProjectPage({ params }: PageProps) {
     return (
       <div className="container mx-auto px-4 py-8">
         <p className="text-red-500">Error loading project. Please try again later.</p>
-    </div>
-  );
+      </div>
+    );
   }
 }

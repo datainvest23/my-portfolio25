@@ -27,20 +27,20 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
   }
 
   return (
-    <div className="table-of-contents">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
       <h2 className="text-xl font-semibold mb-4">TABLE OF CONTENTS</h2>
-      <nav>
+      <nav className="max-h-[60vh] overflow-y-auto">
         <ul className="space-y-2">
           {headings.map((heading) => (
             <li
               key={heading.id}
               style={{
-                marginLeft: `${(heading.level - 1) * 1}rem`, // Indent based on heading level
+                marginLeft: `${(heading.level - 1) * 1}rem`,
               }}
             >
               <button
                 onClick={() => scrollToHeading(heading.id)}
-                className="text-gray-600 hover:text-gray-900 hover:underline text-left w-full"
+                className="text-gray-600 hover:text-blue-600 hover:underline text-left w-full py-1 text-sm"
               >
                 {heading.text}
               </button>

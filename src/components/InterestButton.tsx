@@ -72,20 +72,31 @@ export function InterestButton({ project }: { project: ProjectDetails }) {
       aria-busy={loading}
       aria-disabled={loading || isInterested}
       className={cn(
-        "w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 rounded-lg",
-        "font-medium transition-all duration-200",
-        "shadow-sm hover:shadow-md",
+        "w-full mt-6 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl",
+        "font-semibold transition-all duration-200",
+        "border-2",
         isInterested
-          ? "bg-emerald-500 text-white cursor-not-allowed opacity-75"
+          ? "bg-emerald-50 text-emerald-600 border-emerald-200 cursor-not-allowed"
           : loading
-          ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
-          : "bg-blue-600 hover:bg-blue-700 text-white hover:transform hover:-translate-y-0.5"
+          ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+          : [
+              "bg-white text-blue-600 border-blue-200",
+              "hover:bg-blue-50 hover:border-blue-300",
+              "hover:transform hover:-translate-y-0.5",
+              "shadow-sm hover:shadow-md",
+              "active:bg-blue-100"
+            ]
       )}
     >
       {loading ? (
         <Spinner className="h-5 w-5" />
       ) : (
-        <BookmarkIcon className="h-5 w-5" />
+        <BookmarkIcon 
+          className={cn(
+            "h-5 w-5",
+            isInterested ? "text-emerald-500" : "text-blue-500"
+          )}
+        />
       )}
       <span>
         {isInterested

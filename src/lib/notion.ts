@@ -120,22 +120,66 @@ export async function getProjectBySlug(databaseId: string, slug: string) {
  * Fetch related projects excluding the current slug.
  * @param databaseId - The Notion database ID.
  * @param currentSlug - The slug to exclude from results.
- * @param count - The maximum number of related projects to return.
  * @returns Array of related projects.
  */
-export async function getRelatedProjects(databaseId: string, currentSlug: string, count = 3) {
+export async function getRelatedProjects(databaseId: string, currentSlug: string) {
   try {
-    const projects = await getDatabase(databaseId);
+    const response = await fetch(
+      `https://api.notion.com/v1/databases/${databaseId}/query`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': '2022-06-28'
+        },
+        body: JSON.stringify({
+          filter: {
+            and: [
+              {
+                property: "Status",
+                select: {
+                  equals: "Published"
+                }
+              },
+              {
+                property: "Slug",
+                rich_text: {
+                  does_not_equal: currentSlug // Exclude current project
+                }
+              }
+            ]
+          },
+          page_size: 3, // Limit to 3 projects
+          sorts: [
+            {
+              timestamp: "created_time",
+              direction: "descending"
+            }
+          ]
+        })
+      }
+    );
 
-    // Filter out the current project and return a limited number of related projects
-    return projects
-      .filter(
-        (project: any) =>
-          project.properties.Slug.rich_text[0]?.plain_text !== currentSlug
-      )
-      .slice(0, count);
+    if (!response.ok) {
+      throw new Error('Failed to fetch related projects');
+    }
+
+    const data = await response.json();
+    
+    return data.results.map((page: any) => ({
+      id: page.id,
+      title: page.properties.Name?.title?.[0]?.plain_text || 'Untitled',
+      description: page.properties.Description?.rich_text?.[0]?.plain_text || '',
+      shortDescription: page.properties['Short Description']?.rich_text?.[0]?.plain_text || '',
+      imageUrl: page.cover?.external?.url || page.cover?.file?.url || '',
+      type: page.properties.Type?.select?.name || '',
+      tags: page.properties.Technologies?.multi_select || [],
+      slug: page.properties.Slug?.rich_text?.[0]?.plain_text || page.id,
+    }));
+
   } catch (error) {
     console.error('Error fetching related projects:', error);
-    throw new Error('Failed to fetch related projects.');
+    return [];
   }
 }
