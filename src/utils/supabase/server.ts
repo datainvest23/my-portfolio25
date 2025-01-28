@@ -1,6 +1,5 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { CookieOptions } from '@supabase/ssr'
 
 export async function createClient() {
   const cookieStore = cookies()
@@ -10,18 +9,33 @@ export async function createClient() {
   }
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value ?? ''
+        async get(name: string) {
+          const cookie = cookieStore.get(name)
+          return cookie?.value
         },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options })
+        async set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Handle cookie errors in development
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Cookie set error:', error)
+            }
+          }
         },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.delete({ name, ...options })
+        async remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.delete({ name, ...options })
+          } catch (error) {
+            // Handle cookie errors in development
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('Cookie remove error:', error)
+            }
+          }
         },
       },
     }

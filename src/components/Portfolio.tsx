@@ -61,13 +61,21 @@ export default function Portfolio() {
             variant={activeFilter === key ? 'default' : 'outline'}
             onClick={() => setActiveFilter(key as FilterType)}
             className={cn(
-              "font-medium transition-colors",
+              "font-medium transition-colors border rounded-lg px-4 py-2",
+              "border-[1px]",
               activeFilter === key 
-                ? config.bgColor
-                : "hover:bg-neutral-100/80",
+                ? [
+                    config.bgColor,
               config.textColor,
-              "border",
-              config.borderColor
+                    config.borderColor,
+                    "shadow-sm"
+                  ]
+                : [
+                    "bg-white",
+                    "text-gray-700",
+                    "border-gray-900",
+                    config.hoverBg
+                  ]
             )}
           >
             {config.label}

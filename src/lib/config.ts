@@ -1,34 +1,32 @@
-export type FilterType = 'ALL' | 'WEB' | 'MOBILE' | 'AI' | 'OTHER'
+export type FilterType = 'ALL' | 'SELECTED' | 'DASHBOARD' | 'STRATEGY';
 
 export const filterConfig = {
   ALL: {
     label: 'All Projects',
-    bgColor: 'bg-neutral-100',
-    textColor: 'text-neutral-900',
-    borderColor: 'border-neutral-200'
-  },
-  WEB: {
-    label: 'Web Apps',
-    bgColor: 'bg-blue-100',
-    textColor: 'text-blue-900',
-    borderColor: 'border-blue-200'
-  },
-  MOBILE: {
-    label: 'Mobile Apps',
-    bgColor: 'bg-green-100',
-    textColor: 'text-green-900',
-    borderColor: 'border-green-200'
-  },
-  AI: {
-    label: 'AI Projects',
-    bgColor: 'bg-purple-100',
-    textColor: 'text-purple-900',
-    borderColor: 'border-purple-200'
-  },
-  OTHER: {
-    label: 'Other',
-    bgColor: 'bg-gray-100',
+    bgColor: 'bg-white',
     textColor: 'text-gray-900',
-    borderColor: 'border-gray-200'
+    borderColor: 'border-gray-900',
+    hoverBg: 'hover:bg-gray-50'
+  },
+  SELECTED: {
+    label: 'Selected',
+    bgColor: 'bg-blue-50',
+    textColor: 'text-blue-900',
+    borderColor: 'border-blue-900',
+    hoverBg: 'hover:bg-blue-100'
+  },
+  DASHBOARD: {
+    label: 'Dashboard',
+    bgColor: 'bg-amber-50',
+    textColor: 'text-amber-900',
+    borderColor: 'border-amber-900',
+    hoverBg: 'hover:bg-amber-100'
+  },
+  STRATEGY: {
+    label: 'Strategy',
+    bgColor: 'bg-emerald-50',
+    textColor: 'text-emerald-900',
+    borderColor: 'border-emerald-900',
+    hoverBg: 'hover:bg-emerald-100'
   }
 } as const; 

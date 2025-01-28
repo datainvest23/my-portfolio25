@@ -106,6 +106,7 @@ body {
   background: #1a1a1a;
   color: white;
   padding: 1.25rem;
+  position: relative; /* important for ::before overlay */
 }
 
 .card-back-content {
@@ -241,13 +242,27 @@ body {
   gap: 0.5rem;
 }
 
-.tag.yellow { background: #ffd700; }
-.tag.blue { background: #87ceeb; }
-.tag.red { background: #ff6b6b; }
-.tag.green { background: #98fb98; }
-.tag.purple { background: #dda0dd; }
-.tag.orange { background: #ffa500; }
-.tag.default { background: #e0e0e0; }
+.tag.yellow {
+  background: #ffd700;
+}
+.tag.blue {
+  background: #87ceeb;
+}
+.tag.red {
+  background: #ff6b6b;
+}
+.tag.green {
+  background: #98fb98;
+}
+.tag.purple {
+  background: #dda0dd;
+}
+.tag.orange {
+  background: #ffa500;
+}
+.tag.default {
+  background: #e0e0e0;
+}
 
 .card-back p {
   line-height: 1.6;
@@ -582,7 +597,7 @@ body {
     --brand: 210 100% 50%;
     --brand-foreground: 213 100% 60%;
   }
- 
+
   .dark {
     --brand: 213 100% 60%;
     --brand-foreground: 210 100% 50%;
@@ -595,7 +610,7 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
-  
+
   .card-container {
     height: 400px;
   }
@@ -607,19 +622,19 @@ body {
     max-width: 500px;
     margin: 0 auto;
   }
-  
+
   .card-container {
     height: 380px;
   }
-  
+
   .card-image-container {
     height: 180px;
   }
-  
+
   .card-back {
     padding: 1rem;
   }
-  
+
   .card-description {
     font-size: 0.9rem;
   }
@@ -807,7 +822,7 @@ body {
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .analytics-table {
     display: block;
     overflow-x: auto;
@@ -836,7 +851,7 @@ body {
   color: #666;
 }
 
-/* Remove front card tags styles since they're moved to the back */
+/* Remove front card tags since they're moved to the back */
 .card-front .tags-wrapper {
   display: none;
 }
@@ -857,11 +872,6 @@ body {
   color: rgba(255, 255, 255, 0.9);
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
-}
-
-/* Ensure the icon doesn't interfere with content */
-.card-back {
-  position: relative; /* If not already set */
 }
 
 /* Login Form Styles */
@@ -950,6 +960,7 @@ body {
   flex-direction: column;
 }
 
+/* Minimal Tailwind classes for portfolio cards */
 .portfolio-card {
   @apply relative w-full rounded-xl transition-all duration-300;
   height: 400px;
@@ -980,4 +991,31 @@ body {
   @apply flex flex-wrap gap-2 mt-8 mb-4;
 }
 
-/* Add any additional styles you need */
+/* Additional UI Enhancements */
+.type-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  background-color: #2563eb; /* fully opaque blue background */
+  color: #fff;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark overlay on the flipped side to enhance text readability */
+.card-back::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7); /* Adjust opacity as needed */
+  z-index: 0;
+}
+
+.card-back-content {
+  position: relative; /* so content is above the overlay */
+  z-index: 1;
+}

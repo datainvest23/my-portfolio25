@@ -5,6 +5,7 @@ import RelatedProjectCard from '@/components/RelatedProjectCard';
 import TableOfContents from '@/components/TableOfContents';
 import { redirect, notFound } from 'next/navigation';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface PageProps {
   params: {
@@ -18,34 +19,120 @@ function renderBlock(block: any) {
   const value = block[type];
 
   switch (type) {
-                case 'paragraph':
-      return <p key={id}>{value.rich_text[0]?.plain_text}</p>;
-                case 'heading_1':
-      return <h1 key={id}>{value.rich_text[0]?.plain_text}</h1>;
-                case 'heading_2':
-      return <h2 key={id}>{value.rich_text[0]?.plain_text}</h2>;
-                case 'heading_3':
-      return <h3 key={id}>{value.rich_text[0]?.plain_text}</h3>;
+    case 'paragraph':
+      return (
+        <p key={id} className="mb-4 text-gray-700 leading-relaxed">
+          {value.rich_text.map((text: any, i: number) => renderText(text, i))}
+        </p>
+      );
+    case 'heading_1':
+      return (
+        <h1 key={id} className="text-3xl font-bold mb-6 mt-8">
+          {value.rich_text.map((text: any, i: number) => renderText(text, i))}
+        </h1>
+      );
+    case 'heading_2':
+      return (
+        <h2 key={id} className="text-2xl font-semibold mb-4 mt-6">
+          {value.rich_text.map((text: any, i: number) => renderText(text, i))}
+        </h2>
+      );
+    case 'heading_3':
+      return (
+        <h3 key={id} className="text-xl font-medium mb-3 mt-5">
+          {value.rich_text.map((text: any, i: number) => renderText(text, i))}
+        </h3>
+      );
     case 'bulleted_list_item':
-                  return (
-        <ul key={id}>
-          <li>{value.rich_text[0]?.plain_text}</li>
-        </ul>
+      return (
+        <li key={id} className="ml-6 mb-2 text-gray-700">
+          {value.rich_text.map((text: any, i: number) => renderText(text, i))}
+        </li>
       );
     case 'numbered_list_item':
       return (
-        <ol key={id}>
-          <li>{value.rich_text[0]?.plain_text}</li>
-        </ol>
+        <li key={id} className="ml-6 mb-2 text-gray-700">
+          {value.rich_text.map((text: any, i: number) => renderText(text, i))}
+        </li>
+      );
+    case 'code':
+      return (
+        <pre key={id} className="bg-gray-900 text-white p-4 rounded-lg mb-4 overflow-x-auto">
+          <code className={`language-${value.language || 'plain'}`}>
+            {value.rich_text[0]?.plain_text || ''}
+          </code>
+        </pre>
       );
     case 'image':
-      const src =
-        value.type === 'external' ? value.external.url : value.file.url;
-      return <img key={id} src={src} alt="Notion Image" />;
+      const src = value.type === 'external' ? value.external.url : value.file.url;
+      const caption = value.caption?.length ? value.caption[0]?.plain_text : '';
+      return (
+        <figure key={id} className="my-6">
+          <Image
+            src={src}
+            alt={caption || 'Project image'}
+            width={800}
+            height={500}
+            className="rounded-lg"
+          />
+          {caption && (
+            <figcaption className="text-center text-sm text-gray-500 mt-2">
+              {caption}
+            </figcaption>
+          )}
+        </figure>
+      );
+    case 'embed':
+      return (
+        <div key={id} className="my-6">
+          <iframe
+            src={value.url}
+            className="w-full min-h-[400px] rounded-lg border"
+            allowFullScreen
+          />
+        </div>
+      );
     default:
-      console.log(`❌ Unsupported block type: ${type}`);
+      console.log(`⚠️ Unhandled block type: ${type}`, block);
       return null;
   }
+}
+
+// Helper function to render rich text with formatting
+function renderText(text: any, i: number) {
+  const {
+    annotations: { bold, code, color, italic, strikethrough, underline },
+    text: { content, link }
+  } = text;
+
+  const className = cn(
+    bold && "font-bold",
+    code && "bg-gray-100 px-1 py-0.5 rounded font-mono text-sm",
+    italic && "italic",
+    strikethrough && "line-through",
+    underline && "underline",
+    color !== "default" && `text-${color}`
+  );
+
+  if (link) {
+    return (
+      <a 
+        key={i}
+        href={link.url}
+        className={cn(className, "text-blue-600 hover:underline")}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return content.length ? (
+    <span key={i} className={className}>
+      {content}
+    </span>
+  ) : null;
 }
 
 // Helper function to extract headings for the Table of Contents
@@ -129,11 +216,13 @@ export default async function ProjectPage({ params }: PageProps) {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-3">
-              {blocks.map((block: any) => (
-                <div key={block.id} className="mb-6">
-                  {renderBlock(block)}
-                </div>
-              ))}
+              <article className="prose prose-lg max-w-none prose-headings:font-work-sans prose-p:text-gray-600">
+                {blocks.map((block: any) => (
+                  <div key={block.id} className="mb-6">
+                    {renderBlock(block)}
+                  </div>
+                ))}
+              </article>
             </div>
 
             {/* Sidebar */}
