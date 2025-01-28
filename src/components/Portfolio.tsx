@@ -19,8 +19,20 @@ export default function Portfolio() {
       setIsLoading(true);
       try {
         const response = await fetch(`/api/projects?type=${activeFilter}`);
-        if (!response.ok) throw new Error('Failed to fetch projects');
+        
+        if (response.status === 401) {
+          // Redirect to login if unauthorized
+          window.location.href = '/login';
+          return;
+        }
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'Failed to fetch projects');
+        }
+        
         const data = await response.json();
+        console.log('Fetched projects:', data);
         setProjects(data);
       } catch (error) {
         console.error('Error fetching projects:', error);

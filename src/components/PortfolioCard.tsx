@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface PortfolioCardProps {
   id: string;
@@ -24,6 +24,32 @@ interface PortfolioCardProps {
 export default function PortfolioCard(props: PortfolioCardProps) {
   const { title, shortDescription, imageUrl, tags, slug, type } = props;
   const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [finalImageUrl, setFinalImageUrl] = useState('');
+
+  useEffect(() => {
+    setImageError(false);
+    if (!imageUrl) {
+      setFinalImageUrl('/placeholder.jpg');
+      return;
+    }
+
+    // From the debug output, we can see the cover is coming directly from Unsplash or Notion
+    // No need for transformation, use the URL directly
+    setFinalImageUrl(imageUrl);
+
+    // Log for debugging
+    console.log('Portfolio Card Image URL:', {
+      original: imageUrl,
+      final: finalImageUrl
+    });
+  }, [imageUrl]);
+
+  const handleImageError = () => {
+    console.error('Image load error for:', imageUrl);
+    setImageError(true);
+    setFinalImageUrl('/placeholder.jpg');
+  };
 
   return (
     <Link href={`/project/${slug}`} aria-label={`View details for ${title}`}>
@@ -38,14 +64,18 @@ export default function PortfolioCard(props: PortfolioCardProps) {
       >
         <div className="relative w-full h-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           {/* Image Container */}
-          <div className="relative aspect-video">
-            <Image
-              src={imageUrl}
-              alt={`Project image for ${title}`}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+          <div className="relative aspect-video bg-gray-100">
+            {finalImageUrl && (
+              <Image
+                src={finalImageUrl}
+                alt={`Project image for ${title}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={handleImageError}
+                priority={true}
+              />
+            )}
 
             {/* Type Badge */}
             {type && (

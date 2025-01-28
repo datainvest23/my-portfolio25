@@ -14,28 +14,14 @@ export async function createClient() {
     {
       cookies: {
         async get(name: string) {
-          const cookie = cookieStore.get(name)
+          const cookie = await cookieStore.get(name)
           return cookie?.value
         },
         async set(name: string, value: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch (error) {
-            // Handle cookie errors in development
-            if (process.env.NODE_ENV === 'development') {
-              console.warn('Cookie set error:', error)
-            }
-          }
+          cookieStore.set({ name, value, ...options })
         },
         async remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.delete({ name, ...options })
-          } catch (error) {
-            // Handle cookie errors in development
-            if (process.env.NODE_ENV === 'development') {
-              console.warn('Cookie remove error:', error)
-            }
-          }
+          cookieStore.delete({ name, ...options })
         },
       },
     }
