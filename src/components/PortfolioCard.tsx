@@ -3,135 +3,72 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
 
 interface PortfolioCardProps {
-  id: string;
-  title: string;
-  description: string;
-  shortDescription: string;
-  imageUrl: string;
-  status: string;
-  tags: Array<{
     id: string;
-    name: string;
-    color: string;
-  }>;
-  slug: string;
-  type: string;
+    title: string;
+    description: string;
+    shortDescription: string;
+    imageUrl: string | null;
+    status: string;
+    tags: Array<{
+        id: string;
+        name: string;
+        color: string;
+    }>;
+    slug: string;
+    type: string;
 }
 
-export default function PortfolioCard(props: PortfolioCardProps) {
-  const { title, shortDescription, imageUrl, tags, slug, type } = props;
-  const [isHovered, setIsHovered] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  const [finalImageUrl, setFinalImageUrl] = useState('');
-
-  useEffect(() => {
-    setImageError(false);
-    if (!imageUrl) {
-      setFinalImageUrl('/placeholder.jpg');
-      return;
-    }
-
-    // From the debug output, we can see the cover is coming directly from Unsplash or Notion
-    // No need for transformation, use the URL directly
-    setFinalImageUrl(imageUrl);
-
-    // Log for debugging
-    console.log('Portfolio Card Image URL:', {
-      original: imageUrl,
-      final: finalImageUrl
-    });
-  }, [imageUrl]);
-
-  const handleImageError = () => {
-    console.error('Image load error for:', imageUrl);
-    setImageError(true);
-    setFinalImageUrl('/placeholder.jpg');
-  };
-
-  return (
-    <Link href={`/project/${slug}`} aria-label={`View details for ${title}`}>
-      <motion.div
-        className="group relative h-full"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        whileHover={{ scale: 1.02 }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="relative w-full h-full bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-          {/* Image Container */}
-          <div className="relative aspect-video bg-gray-100">
-            {finalImageUrl && (
-              <Image
-                src={finalImageUrl}
-                alt={`Project image for ${title}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                onError={handleImageError}
-                priority={true}
-              />
-            )}
-
-            {/* Type Badge */}
-            {type && (
-              <div className="absolute top-3 left-3 z-10">
-                <span
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg 
-                  bg-black text-white shadow-md"
-                  style={{ backgroundColor: "rgba(0, 0, 0, 0.7)" }} // Inline fallback for tag background
-                >
-                  {type}
-                </span>
-              </div>
-            )}
-
-            {/* Hover Overlay */}
+export default function PortfolioCard({ title, shortDescription, imageUrl, tags, slug, type }: PortfolioCardProps) {
+    return (
+        <Link href={`/project/${slug}`} aria-label={`View details for ${title}`}>
             <motion.div
-              className="absolute inset-0 flex flex-col justify-center items-center p-6 z-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.3 }}
-              style={{
-                background: 'linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85))',
-                backdropFilter: 'blur(2px)',
-              }}
+                className="group relative h-full transition-transform transform hover:scale-[1.02] bg-white"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
             >
-              {/* Technology Tags */}
-              <div className="flex flex-wrap gap-2 justify-center mb-6">
-                {tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="px-3 py-1 text-sm rounded-full bg-white/15 text-white
-                      backdrop-blur-sm border border-white/20 shadow-sm"
-                  >
-                    {tag.name}
-                  </span>
-                ))}
-              </div>
+                <div className="max-w-sm rounded-lg overflow-hidden shadow-lg border border-gray-200 bg-white">
+                    {/* Image Section */}
+                    <div className="relative w-full h-56 bg-gray-100">
+                        <Image
+                            src={imageUrl || "/placeholder-image.jpg"}
+                            alt={`Project image for ${title}`}
+                            width={500}
+                            height={300}
+                            className="object-cover w-full h-full"
+                            priority
+                            placeholder="blur"
+                            blurDataURL="/placeholder-image.jpg"
+                        />
+                        {/* Type Badge */}
+                        {type && (
+                            <div className="absolute top-3 left-3 bg-black text-white text-xs font-semibold px-3 py-1 rounded-lg shadow">
+                                {type}
+                            </div>
+                        )}
+                    </div>
 
-              {/* Short Description */}
-              <p className="text-sm text-white text-center font-light leading-relaxed max-w-prose">
-                {shortDescription}
-              </p>
+                    {/* Content */}
+                    <div className="px-6 py-4">
+                        <h3 className="font-bold text-xl mb-2 text-gray-900">{title}</h3>
+                        <p className="text-gray-700 text-base line-clamp-2">{shortDescription}</p>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="px-6 py-4 flex flex-wrap gap-2">
+                        {tags.map((tag) => (
+                            <span
+                                key={tag.id}
+                                className="inline-block bg-gray-200 rounded-full px-3 py-1 text-sm font-semibold text-gray-700"
+                            >
+                                {tag.name}
+                            </span>
+                        ))}
+                    </div>
+                </div>
             </motion.div>
-          </div>
-
-          {/* Content Below Image */}
-          <div className="p-4">
-            <h3
-              className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 
-              transition-colors duration-200"
-            >
-              {title}
-            </h3>
-          </div>
-        </div>
-      </motion.div>
-    </Link>
-  );
+        </Link>
+    );
 }

@@ -183,3 +183,4 @@ export async function getRelatedProjects(databaseId: string, currentSlug: string
     return [];
   }
 }
+

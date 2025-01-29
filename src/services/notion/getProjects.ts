@@ -62,24 +62,37 @@ export async function getProjects(filter?: {
     const data = await response.json();
     
     // Transform the data to match your application's needs
-    return data.results.map((page: any) => ({
-      id: page.id,
-      title: page.properties.Name?.title?.[0]?.plain_text || 'Untitled',
-      description: page.properties.Description?.rich_text?.[0]?.plain_text || '',
-      shortDescription: page.properties['Short Description']?.rich_text?.[0]?.plain_text || '',
-      imageUrl: page.cover?.external?.url || page.cover?.file?.url || '',
-      type: page.properties.Type?.select?.name || '',
-      tags: Array.isArray(page.properties.Technologies?.multi_select) 
-        ? page.properties.Technologies.multi_select 
-        : [],
-      aiKeywords: Array.isArray(page.properties['AI keywords']?.multi_select)
-        ? page.properties['AI keywords'].multi_select.map((item: any) => item.name)
-        : [],
-      slug: page.properties.Slug?.rich_text?.[0]?.plain_text || page.id,
-    }));
+    return data.results.map((page: any) => {
+       let imageUrl: string | null = null;
+        if (page.properties?.Image?.files && page.properties.Image.files.length > 0) {
+           const file = page.properties.Image.files[0];
+           imageUrl = file.type === 'external' ? file.external.url : file.file.url
+        } else if (page.cover) {
+           if (page.cover.type === 'external') {
+              imageUrl = page.cover.external.url;
+            } else if (page.cover.type === 'file') {
+                imageUrl = page.cover.file.url;
+            }
+        }
+      return {
+        id: page.id,
+        title: page.properties.Name?.title?.[0]?.plain_text || 'Untitled',
+        description: page.properties.Description?.rich_text?.[0]?.plain_text || '',
+        shortDescription: page.properties['Short Description']?.rich_text?.[0]?.plain_text || '',
+         imageUrl:  imageUrl || '/placeholder-image.jpg',
+        type: page.properties.Type?.select?.name || '',
+        tags: Array.isArray(page.properties.Technologies?.multi_select) 
+          ? page.properties.Technologies.multi_select 
+          : [],
+        aiKeywords: Array.isArray(page.properties['AI keywords']?.multi_select)
+          ? page.properties['AI keywords'].multi_select.map((item: any) => item.name)
+          : [],
+        slug: page.properties.Slug?.rich_text?.[0]?.plain_text || page.id,
+      }
+    });
 
   } catch (error) {
     console.error('Error fetching projects:', error);
     throw error;
   }
-} 
+}

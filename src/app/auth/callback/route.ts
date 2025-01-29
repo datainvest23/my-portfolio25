@@ -1,38 +1,27 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+// src/app/(auth)/callback/route.ts
+import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  const next = searchParams.get('next') || '/';
 
   if (code) {
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.delete({ name, ...options });
-          },
-        },
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) {
+        console.error('Error exchanging code for session:', error);
+        return NextResponse.redirect(`/login?error=auth_failed`);
       }
-    );
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(new URL(next, request.url));
-    }
+      
+      return NextResponse.redirect(next);
+    } catch (error) {
+      console.error('Unexpected error during auth callback:', error);
+       return NextResponse.redirect(`/login?error=unexpected_auth_error`);
+     }
   }
 
-  // Return the user to an error page with instructions
-  return NextResponse.redirect(new URL('/auth/auth-code-error', request.url));
+  return NextResponse.redirect(`/login?error=no_code_provided`);
 }
