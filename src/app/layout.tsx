@@ -8,6 +8,7 @@ import { AuthStateListener } from "@/components/AuthStateListener";
 import TopNav from "@/components/TopNav";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 const workSans = Work_Sans({
@@ -15,15 +16,12 @@ const workSans = Work_Sans({
   variable: "--font-work-sans",
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  // Fetch session data on first render to prevent SSR/CSR mismatch
   useEffect(() => {
     async function checkAuth() {
       const {
@@ -33,7 +31,6 @@ export default function RootLayout({
     }
     checkAuth();
 
-    // Listen for auth state changes to dynamically update TopNav visibility
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_, session) => {
         setIsAuthenticated(!!session);
@@ -45,6 +42,22 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics (GA4) - Loads only if GA ID is set */}
+        {GA_TRACKING_ID && (
+          <>
+            <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`} />
+            <Script id="ga-script" strategy="afterInteractive">
+              {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_TRACKING_ID}');
+              `}
+            </Script>
+          </>
+        )}
+      </head>
       <body className={`${inter.className} ${workSans.variable}`}>
         <SupabaseProvider>
           <ToastProvider>

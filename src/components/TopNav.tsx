@@ -5,10 +5,14 @@ import Link from "next/link";
 import { HomeIcon, BookmarkIcon, ChatBubbleLeftRightIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/providers/SupabaseProvider";
+import bcrypt from "bcryptjs";
+
+const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 
 export default function TopNav() {
   const supabase = useSupabase();
   const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -18,9 +22,25 @@ export default function TopNav() {
       if (session?.user?.user_metadata?.name) {
         setUserName(session.user.user_metadata.name);
       }
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+        sendUserToGoogleAnalytics(session.user.email);
+      }
     }
     getUserProfile();
   }, [supabase]);
+
+  function sendUserToGoogleAnalytics(email: string) {
+    if (typeof window !== "undefined" && window.gtag && GA_TRACKING_ID) {
+      window.gtag("event", "user_logged_in", {
+        email_hash: hashEmail(email), // ✅ Securely hash email before sending
+      });
+    }
+  }
+
+  function hashEmail(email: string) {
+    return bcrypt.hashSync(email, 10); // ✅ Uses bcrypt for secure hashing
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -64,7 +84,7 @@ export default function TopNav() {
           <Link href="/" className="flex items-center gap-3">
             <div className="h-8 w-8 bg-black rounded-lg" />
             <span className="font-medium text-sm">
-              {userName || 'Marc Muller'}
+              {userName || "Marc Muller"}
             </span>
           </Link>
 
@@ -79,7 +99,7 @@ export default function TopNav() {
                       className={cn(
                         "flex items-center gap-2 px-4 py-2 rounded-lg transition-all",
                         "hover:bg-gray-50",
-                        link.highlight && "text-blue-600",
+                        link.highlight && "text-blue-600"
                       )}
                     >
                       <span className="flex-shrink-0">{link.icon}</span>
@@ -128,7 +148,7 @@ export default function TopNav() {
                     className={cn(
                       "flex items-center gap-2 px-4 py-3 rounded-lg transition-all",
                       "hover:bg-gray-50",
-                      link.highlight && "text-blue-600",
+                      link.highlight && "text-blue-600"
                     )}
                   >
                     <span className="flex-shrink-0">{link.icon}</span>
