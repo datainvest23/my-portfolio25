@@ -84,10 +84,43 @@ module.exports = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		gridTemplateColumns: {
+  			'portfolio': 'repeat(auto-fit, minmax(300px, 1fr))',
+  		},
+  		gridAutoRows: {
+  			'portfolio': 'minmax(300px, auto)',
+  		},
+  		transformStyle: {
+  			'preserve-3d': 'preserve-3d',
+  		},
+  		transform: {
+  			'flip': 'rotateY(180deg)',
+  		},
+  		backfaceVisibility: {
+  			'hidden': 'hidden',
+  		},
+  		perspective: {
+  			'custom': '1000px',
+  		},
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function ({ addUtilities }) {
+      addUtilities({
+        '.preserve-3d': {
+          'transform-style': 'preserve-3d',
+        },
+        '.backface-hidden': {
+          'backface-visibility': 'hidden',
+        },
+        '.perspective': {
+          'perspective': '1000px',
+        },
+      });
+    },
+  ],
 } 
 
 

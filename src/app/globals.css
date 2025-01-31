@@ -20,9 +20,7 @@ body {
 }
 
 .container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 20px;
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
 /* Header Styles */
@@ -751,7 +749,7 @@ body {
 }
 
 .perspective {
-  perspective: 2000px;
+  perspective: 1000px;
 }
 
 .preserve-3d {
@@ -802,4 +800,22 @@ body {
 .card-back-content {
   position: relative; /* so content is above the overlay */
   z-index: 1;
+}
+
+@layer utilities {
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .perspective {
+    perspective: 1000px;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }
