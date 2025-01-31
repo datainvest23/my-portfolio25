@@ -1,8 +1,30 @@
-import { cookies, type CookieOptions } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+// ✅ Server Action for modifying authentication cookies
+export async function setAuthCookie(name: string, value: string, options: CookieOptions) {
+  try {
+    cookies().set({ name, value, ...options });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Cookie set error:", error);
+    }
+  }
+}
+
+// ✅ Server Action for removing authentication cookies
+export async function removeAuthCookie(name: string, options: CookieOptions) {
+  try {
+    cookies().delete({ name, ...options });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Cookie remove error:", error);
+    }
+  }
+}
 
 export async function createClient() {
-  const cookieStore = await cookies(); // ✅ Ensure `cookies()` is awaited properly
+  const cookieStore = cookies();
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     throw new Error("Missing Supabase environment variables");
@@ -14,14 +36,13 @@ export async function createClient() {
     {
       cookies: {
         async get(name: string) {
-          const cookie = cookieStore.get(name); // ✅ Now correctly gets the cookie
-          return cookie?.value || null;
+          return cookieStore.get(name)?.value;
         },
         async set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options }); // ✅ Ensure cookies are correctly set
+          await setAuthCookie(name, value, options); // ✅ Uses Server Action
         },
         async remove(name: string, options: CookieOptions) {
-          cookieStore.delete({ name, ...options }); // ✅ Properly remove cookies
+          await removeAuthCookie(name, options); // ✅ Uses Server Action
         },
       },
     }
