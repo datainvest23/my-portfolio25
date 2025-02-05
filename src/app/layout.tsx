@@ -9,6 +9,7 @@ import TopNav from "@/components/TopNav";
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import Script from "next/script";
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ["latin"] });
 const workSans = Work_Sans({
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </AuthStateListener>
           </ToastProvider>
         </SupabaseProvider>
+        <Analytics />
       </body>
     </html>
   );

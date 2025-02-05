@@ -1,36 +1,231 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Readme.md
 
-## Getting Started
+# Portfolio25 🚀
 
-First, run the development server:
+**Next.js AI-Powered Portfolio with GPT Integration & Notion CMS**
+
+Full Information can be found in [/docs/Product_Requirements.md]
+## 📝 Overview
+
+Portfolio25 represents a cutting-edge **Next.js (v14)** application that transforms traditional professional portfolios into dynamic, interactive experiences. This innovative platform seamlessly integrates **GPT-driven chat interactions** for natural conversation flows, **Notion-based content management** for effortless updates and organization, and a sophisticated **user-friendly project interest tracking system** that enables meaningful engagement with portfolio content.
+
+The platform elevates the standard portfolio experience by masterfully combining three core elements: cutting-edge AI technology that facilitates intelligent interactions, a robust and secure authentication system that ensures data privacy, and an expertly crafted intuitive design that makes navigation and exploration effortless for visitors.
+
+## 🌟 Features
+
+- 🔑 **Supabase Authentication** – Passwordless, secure login system
+- 💬 **Conversational UI** – AI-powered chat for onboarding & project discovery
+- 🧠 **Thread-based AI Memory** – Persistent chat history using OpenAI's GPT
+- 📖 **Notion CMS Integration** – Dynamic project management via Notion
+- ⭐ **Interest Tracking** – Save and follow favorite projects
+- 🔐 **Protected Routes & Middleware** – Enhanced security via session validation
+- 🎨 **Beautiful UI** – Styled with **TailwindCSS**, **ShadCN/UI**, and **Framer Motion**
+- 📊 **Analytics Dashboard** – User engagement tracking.
+
+## 🏗️ Tech Stack
+
+| Technology | Purpose | Version | Key Features |
+| --- | --- | --- | --- |
+| **Next.js 14** | Frontend framework | 14.0.0 | Server components, App Router, React Server Components |
+| **Supabase** | Authentication & Database | 2.39.0 | PostgreSQL, Row Level Security, Real-time subscriptions |
+| **OpenAI API** | AI-powered chat | GPT-4 | Thread management, Context awareness, Natural language processing |
+| **Notion API** | Portfolio content | 2024-01 | Page management, Database integration, Rich text support |
+| **TailwindCSS** | Styling | 3.4.0 | Utility-first CSS, JIT compiler, Responsive design |
+| **ShadCN/UI** | UI components | 0.5.0 | Accessible components, Customizable themes, Modern design |
+| **Framer Motion** | Animations | 10.16.0 | Gesture support, Layout animations, Variants system |
+
+---
+
+## 🚀 Getting Started
+
+### 1️⃣ **Clone the Repository**
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <https://github.com/yourusername/portfolio25.git>
+cd portfolio25
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2️⃣ **Install Dependencies**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+bash
+CopyEdit
+npm install
+# or
+yarn install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
 
-## Learn More
+### 3️⃣ **Set Up Environment Variables**
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env.local` file and fill in the necessary credentials (refer to `.env.local.example`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+plaintext
+CopyEdit
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+OPENAI_API_KEY=your_openai_api_key
+NOTION_API_KEY=your_notion_api_key
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
+### 4️⃣ **Run the Development Server**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+bash
+CopyEdit
+npm run dev
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+
+Open [http://localhost:3000](http://localhost:3000/) in your browser.
+
+---
+
+## 📂 Project Structure
+
+```
+bash
+CopyEdit
+📂 datainvest23-my-portfolio25/
+├── 📂 components/            # UI Components
+│   ├── Layout.tsx           # Page Layout
+│   ├── ChatWindow.tsx       # GPT Chat Interface
+│   ├── PortfolioCard.tsx    # Portfolio Project Card
+│   ├── Sidebar.tsx          # Sidebar Navigation
+│   ├── InterestButton.tsx   # "Interested" button component
+│   └── ui/                  # Custom UI elements (buttons, inputs, etc.)
+├── 📂 src/
+│   ├── 📂 app/
+│   │   ├── page.tsx         # Home page
+│   │   ├── layout.tsx       # Main Layout
+│   │   ├── (auth)/          # Authentication pages
+│   │   │   ├── login/page.tsx    # Login page
+│   │   │   ├── callback/route.ts # Authentication callback
+│   │   ├── portfolio/[id]/page.tsx  # Portfolio project details
+│   │   ├── interested/page.tsx     # User's interested projects
+│   │   ├── conversation/page.tsx   # AI Chat interaction
+│   │   ├── api/
+│   │   │   ├── gpt/message/route.ts  # GPT Message API
+│   │   │   ├── gpt/thread/route.ts   # GPT Thread API
+│   │   │   ├── notion/project/[id]/route.ts  # Notion Project Fetch API
+│   │   │   ├── interested/route.ts   # Interest tracking API
+│   │   │   ├── auth/callback/route.ts # Supabase Auth Callback
+│   │   ├── middleware.ts       # API security middleware
+│   ├── 📂 lib/
+│   │   ├── notion.ts         # Notion API helpers
+│   │   ├── openai.ts         # OpenAI API handlers
+│   │   ├── supabaseClient.ts # Supabase client setup
+│   │   ├── utils.ts          # General utility functions
+├── 📜 LICENSE
+├── 📜 README.md
+├── 📜 package.json
+├── 📜 next.config.js
+└── 📜 tailwind.config.js
+
+```
+
+---
+
+## 🔌 API Endpoints
+
+### 🎤 **GPT Chat API**
+
+**Endpoint:** `POST /api/gpt/message/`
+
+Handles user messages and retains conversation **thread ID**.
+
+---
+
+### 📖 **Notion Portfolio API**
+
+**Endpoint:** `GET /api/notion/project/[id]`
+
+Fetches project details from Notion.
+
+---
+
+### ⭐ **Interested Projects API**
+
+**Endpoint:** `POST /api/interested/`
+
+Saves projects as "interested."
+
+---
+
+## 🔒 Authentication & Security
+
+- 🔹 **Supabase Authentication**: Magic link for passwordless login.
+- 🔹 **Session-Based Middleware**: Routes are protected using session validation.
+- 🔹 **JWT Token Handling**: Supabase stores secure authentication tokens.
+
+---
+
+## 🛠️ Deployment
+
+Portfolio25 is **Vercel-ready**. Deploy instantly:
+
+### 🏗️ **Manual Deployment**
+
+1. **Build the Project**:
+    
+    ```bash
+    npm run build
+    
+    ```
+    
+2. **Start the Server**:
+    
+    ```bash
+    npm start
+    
+    ```
+    
+
+---
+
+## 👥 Contributing
+
+We welcome contributions! Follow these steps:
+
+1. Fork the repo.
+2. Create a new branch: `git checkout -b feature-name`
+3. Commit changes: `git commit -m "Added new feature"`
+4. Push to branch: `git push origin feature-name`
+5. Submit a Pull Request 🎉
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 🎯 Roadmap
+
+🚀 Future Enhancements:
+
+- 🌍 **Multilingual Support**
+- 🏆 **Gamification Features**
+- 📊 **Advanced User Analytics**
+- 🔄 **Automated Notion Syncing**
+
+---
+
+## 💬 Feedback & Support
+
+- 📧 **Email**: support@dataInvest.guru
+- 💬 **Join Discord**: Portfolio25 Community
+
+---
+
+### ⭐ **If you like this project, consider giving it a star!** ⭐
+
+---
+
+Made with ❤️ by **Marc Muller / DataInvest.guru**.
+
+Full Information can be found in [/docs/Product_Requirements.md]
