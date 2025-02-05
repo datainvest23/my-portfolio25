@@ -1,0 +1,1 @@
+export const UNIVERSAL_PASSWORD = 'portfolioUser2024!' as const; 

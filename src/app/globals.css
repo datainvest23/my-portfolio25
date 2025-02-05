@@ -60,17 +60,17 @@ body {
 
 .portfolio-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   padding: 2rem;
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
+/* Remove any existing card-specific styles that might conflict */
 .card h3 {
-    margin: 1rem;
-    font-size: 1.5rem;
-    font-weight: 400;
+  margin: 0;
+  line-height: 1.4;
 }
 
 .tags {
@@ -397,17 +397,20 @@ body {
   color: #000;
 }
 
+/* Update responsive styles */
 @media (max-width: 1024px) {
-  .content-layout {
+  .portfolio-grid {
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .portfolio-grid {
     grid-template-columns: 1fr;
-  }
-
-  .main-content {
+    max-width: 500px;
     margin: 0 auto;
-  }
-
-  .toc-sidebar {
-    display: none;
+    padding: 1rem;
   }
 }
 
@@ -421,22 +424,6 @@ body {
         --brand: 213 100% 60%;
         --brand-foreground: 210 100% 50%;
     }
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .portfolio-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .portfolio-grid {
-    grid-template-columns: 1fr;
-    max-width: 500px;
-    margin: 0 auto;
-  }
 }
 
 /* Related Projects Section */
@@ -757,4 +744,46 @@ body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+}
+
+/* Add these styles to your existing globals.css */
+.group:hover .group-hover\:bg-opacity-75 {
+  --tw-bg-opacity: 0.75;
+}
+
+.group:hover .group-hover\:opacity-100 {
+  opacity: 1;
+}
+
+.hover\:scale-105:hover {
+  --tw-scale-x: 1.05;
+  --tw-scale-y: 1.05;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+/* Add or update these styles */
+.group {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+/* Ensure hover effects aren't blocked */
+.group:hover {
+  z-index: 10;
+}
+
+/* Card specific hover styles */
+.group:hover .card-hover-effects {
+  border-width: 2px;
+  border-color: rgb(209 213 219);
+  --tw-shadow: 8px 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+/* Ensure transitions are smooth */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }

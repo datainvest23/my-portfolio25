@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import { UNIVERSAL_PASSWORD } from '@/lib/constants';
 
 // Custom Components
 import { AIInputWithLoading } from "@/components/ui/ai-input-with-loading";
@@ -55,11 +56,11 @@ export default function LoginPage() {
   const handleSubmit = async (value: string) => {
     if (step === "name") {
       setName(value);
-      setTypedMessage([]); // Reset before showing new message
+      setTypedMessage([]);
       setMessageCompleted(false);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Small delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const newMessage = `Nice to meet you, ${value}! What's your email address?`;
-      setTypedMessage(newMessage.split("")); // Properly store in an array
+      setTypedMessage(newMessage.split(""));
       setMessageCompleted(true);
       setStep("email");
     } else if (step === "email") {
@@ -67,16 +68,28 @@ export default function LoginPage() {
       setLoading(true);
 
       try {
-        const { error: signUpError } = await supabase.auth.signUp({
+        // Try to sign in first using the universal password
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
-          password: Math.random().toString(36).slice(-8),
-          options: {
-            data: { name },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
+          password: UNIVERSAL_PASSWORD,
         });
 
-        if (signUpError) throw signUpError;
+        // If sign in fails, try to sign up with the same universal password
+        if (signInError && signInError.message.includes('Invalid login credentials')) {
+          const { error: signUpError } = await supabase.auth.signUp({
+            email,
+            password: UNIVERSAL_PASSWORD,
+            options: {
+              data: { name },
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
+          });
+
+          if (signUpError) throw signUpError;
+        } else if (signInError) {
+          // If it's any other error, throw it
+          throw signInError;
+        }
 
         setTypedMessage("Perfect! You're all set. Redirecting you to the portfolio.".split(""));
         setStep("complete");
@@ -85,10 +98,13 @@ export default function LoginPage() {
           router.push("/");
           router.refresh();
         }, 2000);
+
       } catch (error) {
         console.error("Auth error:", error);
         toast.error("Sorry, something went wrong. Please try again.");
-        setTypedMessage("I'm sorry, there was an error with authentication. Please try again.".split(""));
+        setTypedMessage(
+          "I'm sorry, there was an error with authentication. Please try again.".split("")
+        );
       } finally {
         setLoading(false);
       }
