@@ -4,12 +4,18 @@ import * as React from "react"
 import { cn } from "@/lib/utils";
 import { motion, useAnimation } from "framer-motion";
 import { Magnet } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
+interface Point {
+    x: number;
+    y: number;
+}
+
 interface MagnetizeButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    particleCount?: number;
-    attractRadius?: number;
+    children: React.ReactNode;
+    className?: string;
+    _attractRadius?: number;
 }
 
 interface Particle {
@@ -18,24 +24,48 @@ interface Particle {
     y: number;
 }
 
-function MagnetizeButton({
+export function MagnetizeButton({
+    children,
     className,
-    particleCount = 12,
-    attractRadius = 50,
+    _attractRadius = 200,
     ...props
 }: MagnetizeButtonProps) {
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [position, setPosition] = useState<Point>({ x: 0, y: 0 });
+    const [isHovered, setIsHovered] = useState(false);
     const [isAttracting, setIsAttracting] = useState(false);
     const [particles, setParticles] = useState<Particle[]>([]);
     const particlesControl = useAnimation();
 
     useEffect(() => {
-        const newParticles = Array.from({ length: particleCount }, (_, i) => ({
+        const newParticles = Array.from({ length: 12 }, (_, i) => ({
             id: i,
             x: Math.random() * 360 - 180,
             y: Math.random() * 360 - 180,
         }));
         setParticles(newParticles);
-    }, [particleCount]);
+    }, []);
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!buttonRef.current || !isHovered) return;
+
+        const rect = buttonRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        const deltaX = mouseX - centerX;
+        const deltaY = mouseY - centerY;
+
+        setPosition({ x: deltaX * 0.2, y: deltaY * 0.2 });
+    };
+
+    const handleMouseLeave = () => {
+        setPosition({ x: 0, y: 0 });
+        setIsHovered(false);
+    };
 
     const handleInteractionStart = useCallback(async () => {
         setIsAttracting(true);
@@ -64,20 +94,23 @@ function MagnetizeButton({
     }, [particlesControl, particles]);
 
     return (
-        <Button
+        <button
+            ref={buttonRef}
             className={cn(
-                "min-w-40 relative touch-none",
-                "bg-violet-100 dark:bg-violet-900",
-                "hover:bg-violet-200 dark:hover:bg-violet-800",
-                "text-violet-600 dark:text-violet-300",
-                "border border-violet-300 dark:border-violet-700",
-                "transition-all duration-300",
+                "relative inline-flex items-center justify-center transition-transform duration-150 ease-linear",
                 className
             )}
-            onMouseEnter={handleInteractionStart}
-            onMouseLeave={handleInteractionEnd}
+            onMouseEnter={() => {
+                setIsHovered(true);
+                handleInteractionStart();
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
             onTouchStart={handleInteractionStart}
             onTouchEnd={handleInteractionEnd}
+            style={{
+                transform: `translate(${position.x}px, ${position.y}px)`,
+            }}
             {...props}
         >
             {particles.map((_, index) => (
@@ -103,8 +136,7 @@ function MagnetizeButton({
                 />
                 {isAttracting ? "Interesting!" : "Interesting?"}
             </span>
-        </Button>
+            {children}
+        </button>
     );
-}
-
-export { MagnetizeButton } 
+} 

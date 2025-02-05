@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "migrate-components": "node scripts/migrate-components.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -16,34 +18,48 @@
     "@radix-ui/react-label": "^2.1.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@supabase/ssr": "^0.5.2",
+<<<<<<< HEAD
     "@supabase/supabase-js": "^2.48.1",
     "@tabler/icons-react": "^3.28.1",
+=======
+    "@supabase/supabase-js": "^2.48.0",
+    "@tabler/icons-react": "^3.29.0",
+>>>>>>> 997e0693bb39e8a6f5bf00e575adaeff1de1c18b
     "chart.js": "^4.4.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cobe": "^0.6.3",
+<<<<<<< HEAD
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.473.0",
     "next": "^15.1.6",
     "openai": "^4.79.4",
     "react": "^19.0.0",
+=======
+    "framer-motion": "^12.0.3",
+    "lucide-react": "^0.474.0",
+    "next": "^15.1.6",
+    "openai": "^4.80.0",
+    "react": "^18.3.1",
+>>>>>>> 997e0693bb39e8a6f5bf00e575adaeff1de1c18b
     "react-chartjs-2": "^5.3.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.1",
-    "react-icons": "^5.4.0",
-    "tailwind-merge": "^2.6.0"
+    "react-icons": "^5.0.1",
+    "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "15.1.5",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "^15.1.6",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
   }
 }

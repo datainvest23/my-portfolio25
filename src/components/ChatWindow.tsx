@@ -6,110 +6,61 @@ import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { ChatBubble } from '@/components/ui/chat-bubble';
 import { cn } from '@/lib/utils';
 
-type Message = {
+interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  createdAt: Date;
-};
-
-interface ChatWindowProps {
-  threadId: string;
-  initialMessage?: string | null;
 }
 
-export function ChatWindow({ threadId, initialMessage }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+interface ChatWindowProps {
+  threadId: string | null;
+  onSend: (message: string) => Promise<void>;
+  messages: Message[];
+  className?: string;
+}
+
+export function ChatWindow({ 
+  threadId,
+  onSend,
+  messages,
+  className 
+}: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  const scrollToBottom = () => {
+    if (!isScrolling && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
-    // Initial welcome message
-    setMessages([
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: initialMessage || "Hi! I'm your AI assistant. How can I help you today?",
-        createdAt: new Date(),
-      },
-    ]);
-  }, [initialMessage]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (inputValue: string) => {
-    if (!inputValue.trim() || isLoading) return;
-
+  const handleSubmit = async (content: string) => {
     try {
-      setIsLoading(true);
-      
-      // Add user message
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        role: 'user',
-        content: inputValue,
-        createdAt: new Date(),
-      };
-      setMessages(prev => [...prev, userMessage]);
-
-      // Send message to API
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threadId, message: inputValue }),
-      });
-
-      if (!response.ok) throw new Error('Failed to send message');
-
-      const data = await response.json();
-
-      // Add assistant response
-      const assistantMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: data.response,
-        createdAt: new Date(),
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-
+      await onSend(content);
     } catch (error) {
-      console.error('Chat error:', error);
-      // Add error message
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
-        createdAt: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to send message:', error);
     }
   };
 
   return (
-    <div className="flex flex-col h-[600px]">
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        <AnimatePresence initial={false}>
+    <div className="flex flex-col h-full">
+      <div 
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+        onScroll={() => setIsScrolling(true)}
+        onScrollEnd={() => setIsScrolling(false)}
+      >
           {messages.map((message) => (
-            <motion.div
+          <ChatBubble
               key={message.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ChatBubble 
-                variant={message.role === 'assistant' ? "received" : "sent"}
-                className="shadow-sm"
+            variant={message.role === 'user' ? 'sent' : 'received'}
               >
                 {message.content}
               </ChatBubble>
-            </motion.div>
           ))}
-        </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
 

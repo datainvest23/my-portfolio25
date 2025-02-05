@@ -8,11 +8,11 @@ type Row = Database['public']['Tables']['your_table']['Row'];
 
 export function DataFetcher() {
   const supabase = useSupabase();
-  const [data, setData] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_data, setData] = useState<Row[]>([]);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         const { data, error } = await supabase
           .from('your_table')
@@ -25,10 +25,10 @@ export function DataFetcher() {
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchData();
+    void fetchData();
   }, [supabase]);
 
-  // ... rest of component
+  return null; // Implement your UI here
 } 

@@ -1,31 +1,38 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, LayoutGroup } from "framer-motion";
+
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export const FlipWords = ({
-  words,
-  duration = 3000,
-  className,
-}: {
+interface FlipWordsProps {
   words: string[];
   duration?: number;
   className?: string;
-}) => {
+}
+
+export function FlipWords({
+  words,
+  duration = 3000,
+  className,
+}: FlipWordsProps) {
   const [currentWord, setCurrentWord] = useState(words[0]);
-  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const startAnimation = useCallback(() => {
-    const word = words[words.indexOf(currentWord) + 1] || words[0];
-    setCurrentWord(word);
+    const currentIndex = words.indexOf(currentWord);
+    const nextWord = words[currentIndex + 1] || words[0];
+    setCurrentWord(nextWord);
     setIsAnimating(true);
   }, [currentWord, words]);
 
   useEffect(() => {
-    if (!isAnimating)
-      setTimeout(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (!isAnimating) {
+      timeoutId = setTimeout(() => {
         startAnimation();
       }, duration);
+    }
+    return () => clearTimeout(timeoutId);
   }, [isAnimating, duration, startAnimation]);
 
   return (
@@ -35,36 +42,22 @@ export const FlipWords = ({
       }}
     >
       <motion.div
-        initial={{
-          opacity: 0,
-          y: 10,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
+        key={currentWord}
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -40 }}
         transition={{
-          type: "spring",
-          stiffness: 100,
-          damping: 10,
-        }}
-        exit={{
-          opacity: 0,
-          y: -40,
-          x: 40,
-          filter: "blur(8px)",
-          scale: 2,
-          position: "absolute",
+          duration: 0.75,
+          ease: [0.76, 0, 0.24, 1],
         }}
         className={cn(
-          "z-10 inline-block relative text-left text-foreground px-2",
+          "h-[1.2em] flex items-center justify-center",
           className
         )}
-        key={currentWord}
       >
         {currentWord.split(" ").map((word, wordIndex) => (
           <motion.span
-            key={word + wordIndex}
+            key={`${word}-${wordIndex}`}
             initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{
@@ -75,7 +68,7 @@ export const FlipWords = ({
           >
             {word.split("").map((letter, letterIndex) => (
               <motion.span
-                key={word + letterIndex}
+                key={`${word}-${letterIndex}`}
                 initial={{ opacity: 0, y: 10, filter: "blur(8px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{
@@ -93,4 +86,4 @@ export const FlipWords = ({
       </motion.div>
     </AnimatePresence>
   );
-}; 
+} 

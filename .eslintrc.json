@@ -1,24 +1,56 @@
 {
   "extends": [
     "next/core-web-vitals",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json",
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
   "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
     "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-vars": ["warn", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_"
-    }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "react-hooks/exhaustive-deps": "warn",
     "@next/next/no-img-element": "warn",
+<<<<<<< HEAD
     "@typescript-eslint/no-empty-interface": "off"
+=======
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ]
+>>>>>>> 997e0693bb39e8a6f5bf00e575adaeff1de1c18b
   },
   "settings": {
     "next": {
       "rootDir": "src/"
     }
+<<<<<<< HEAD
   }
+=======
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "public/",
+    "*.config.js",
+    "*.config.mjs"
+  ]
+>>>>>>> 997e0693bb39e8a6f5bf00e575adaeff1de1c18b
 } 

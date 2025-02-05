@@ -14,83 +14,94 @@ export default function AuthTest() {
     setLogs(prev => [...prev, `${new Date().toISOString()}: ${message}`]);
   };
 
-  async function testSignup() {
-    addLog("Starting signup test");
+  const handleSignUp = async () => {
     try {
-      const password = "test123!@#";
-
-      // Try signup
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
-        password,
+        password: 'testpassword123',
         options: {
-          data: { name }
-        }
+          data: {
+            name,
+          },
+        },
       });
 
-      addLog(`SignUp result: ${JSON.stringify({ signUpData, signUpError }, null, 2)}`);
-
-      // If user exists, try sign in
-      if (signUpError?.message === 'User already registered') {
-        addLog("User exists, trying sign in");
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        addLog(`SignIn result: ${JSON.stringify({ signInData, signInError }, null, 2)}`);
-      }
-
-      // Check session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      addLog(`Session check: ${JSON.stringify({ session, sessionError }, null, 2)}`);
-
-      if (session) {
-        addLog("Got session, redirecting in 3 seconds...");
-        setTimeout(() => {
-          router.push('/');
-          router.refresh();
-        }, 3000);
-      }
-
+      if (error) throw error;
+      addLog(`Sign up successful: ${data.user?.id}`);
     } catch (error) {
-      addLog(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      addLog(`Sign up error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }
+  };
+
+  const handleSignIn = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'testpassword123',
+      });
+
+      if (error) throw error;
+      addLog(`Sign in successful: ${data.user.id}`);
+    } catch (error) {
+      addLog(`Sign in error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      addLog('Sign out successful');
+    } catch (error) {
+      addLog(`Sign out error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Auth Test Page</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Auth Test</h1>
       
       <div className="space-y-4 mb-8">
         <div>
-          <label className="block text-sm font-medium mb-1">Name:</label>
-          <input 
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border rounded"
-            placeholder="Enter name"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Email:</label>
-          <input 
+          <label className="block mb-2">Email:</label>
+          <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border rounded"
-            placeholder="Enter email"
+            className="border p-2 rounded"
           />
         </div>
-
-        <button
-          onClick={testSignup}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Test Sign Up/Sign In
-        </button>
+        
+        <div>
+          <label className="block mb-2">Name:</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="border p-2 rounded"
+          />
+        </div>
+        
+        <div className="space-x-4">
+          <button
+            onClick={() => void handleSignUp()}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Sign Up
+          </button>
+          <button
+            onClick={() => void handleSignIn()}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Sign In
+          </button>
+          <button
+            onClick={() => void handleSignOut()}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
 
       <div className="mt-8">
