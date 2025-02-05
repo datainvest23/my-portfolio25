@@ -7,6 +7,7 @@ import { redirect, notFound } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import Script from 'next/script';
+import Link from 'next/link';
 
 interface PageProps {
   params: {
@@ -181,9 +182,11 @@ export default async function ProjectPage({ params }: PageProps) {
 
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div className="lg:col-span-3">{blocks.map((block: any) => <div key={block.id} className="mb-6">{renderBlock(block)}</div>)}</div>
+            <div className="lg:col-span-3">
+              {blocks.map((block: any) => <div key={block.id} className="mb-6">{renderBlock(block)}</div>)}
+            </div>
 
-            {/* Sidebar - Added sticky positioning */}
+            {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-20 space-y-6">
                 <InterestButton project={{ id: project.id, name: projectName, imageUrl: projectCover, shortDescription: projectDescription, type: project.properties?.Type?.select?.name, tags: projectTechnologies, slug }} />
