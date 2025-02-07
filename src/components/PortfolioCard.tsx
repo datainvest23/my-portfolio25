@@ -1,8 +1,10 @@
+// src/components/PortfolioCard.tsx
 "use client";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface PortfolioCardProps {
   id: string;
@@ -21,11 +23,13 @@ interface PortfolioCardProps {
 }
 
 export default function PortfolioCard({
+  id,
   title,
   imageUrl,
   tags,
   slug,
   type,
+  shortDescription, // Add shortDescription to props
 }: PortfolioCardProps) {
   return (
     <Link href={`/project/${slug}`} aria-label={`View details for ${title}`}>
@@ -52,17 +56,17 @@ export default function PortfolioCard({
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-start justify-center">
               <button className="mt-8 bg-gray-800/90 text-white px-6 py-2.5 rounded-lg font-medium transform transition-all duration-300 hover:bg-gray-700 hover:scale-105 hover:shadow-lg backdrop-blur-sm flex items-center group/btn">
                 Read Insights
-                <svg 
-                  className="ml-2 w-4 h-4 transform transition-transform duration-300 group-hover/btn:translate-x-1" 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className="ml-2 w-4 h-4 transform transition-transform duration-300 group-hover/btn:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M17 8l4 4m0 0l-4 4m4-4H3" 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
                   />
                 </svg>
               </button>
@@ -70,11 +74,16 @@ export default function PortfolioCard({
           </div>
 
           {/* Content */}
-          <div className="p-6">
-            <h3 className="font-semibold text-xl text-gray-900 line-clamp-2 min-h-[3.5rem]">
-              {title}
-            </h3>
-            
+          <div className="p-6 flex flex-col justify-between">
+            <div>
+              <h3 className="font-semibold text-xl text-gray-900 line-clamp-2 min-h-[3.5rem]">
+                {title}
+              </h3>
+              <p className="text-gray-600 text-sm mt-2">
+                {shortDescription} {/* Display the shortDescription */}
+              </p>
+            </div>
+
             {/* Tags */}
             <div className="mt-4 flex flex-wrap gap-2">
               {tags.map((tag) => (
