@@ -1,3 +1,5 @@
+// src/lib/types.ts
+
 export interface NotionBlock {
   id: string;
   type: string;
@@ -10,6 +12,8 @@ export interface NotionPage {
     [key: string]: any; // For now, allow any additional properties
   };
 }
+
+// src/lib/types.ts
 
 export interface Project {
   id: string;
@@ -25,4 +29,5 @@ export interface Project {
   }>;
   slug: string;
   type: string;
-} 
+  featured: boolean; // Added Featured field
+}

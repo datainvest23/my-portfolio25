@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { BookmarkIcon } from "@heroicons/react/24/solid"; // use a better icon!
 
 interface PortfolioCardProps {
   id: string;
@@ -20,16 +21,17 @@ interface PortfolioCardProps {
   }>;
   slug: string;
   type: string;
+  featured: boolean;
 }
 
 export default function PortfolioCard({
-  id,
   title,
   imageUrl,
   tags,
   slug,
   type,
-  shortDescription, // Add shortDescription to props
+  shortDescription,
+  featured // Now expects featured parameter
 }: PortfolioCardProps) {
   return (
     <Link href={`/project/${slug}`} aria-label={`View details for ${title}`}>
@@ -40,7 +42,7 @@ export default function PortfolioCard({
         transition={{ duration: 0.5 }}
       >
         <div className="h-full rounded-xl overflow-hidden shadow-card hover:shadow-card-hover border border-gray-200 bg-white transition-all duration-300 card-hover-effects">
-          {/* Image Container with Hover Overlay */}
+          {/* Image Container with Featured Icon */}
           <div className="relative overflow-hidden">
             <Image
               src={imageUrl || "/placeholder-image.jpg"}
@@ -52,6 +54,12 @@ export default function PortfolioCard({
               placeholder="blur"
               blurDataURL="/placeholder-image.jpg"
             />
+            {featured && (
+              <div className="absolute top-2 right-2 text-yellow-500">
+                <BookmarkIcon className="h-6 w-6" />
+              </div>
+            )}
+            
             {/* Hover Overlay with Read Insights Button */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-start justify-center">
               <button className="mt-8 bg-gray-800/90 text-white px-6 py-2.5 rounded-lg font-medium transform transition-all duration-300 hover:bg-gray-700 hover:scale-105 hover:shadow-lg backdrop-blur-sm flex items-center group/btn">
@@ -80,7 +88,7 @@ export default function PortfolioCard({
                 {title}
               </h3>
               <p className="text-gray-600 text-sm mt-2">
-                {shortDescription} {/* Display the shortDescription */}
+                {shortDescription}
               </p>
             </div>
 

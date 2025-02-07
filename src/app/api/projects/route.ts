@@ -1,6 +1,8 @@
+// src/app/api/projects/route.ts
 import { getDatabase } from '@/lib/notion';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
+import { filterConfig } from '@/lib/config';
 
 export async function GET(request: Request) {
   try {
@@ -16,15 +18,18 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
+    // Define the filter for the Notion query based on the 'type' parameter
+    const notionFilter = type && type !== 'ALL'
+      ? {
+        property: 'Type',  // Filter by the 'Type' property
+        type: 'select',   // The type of the property is 'select'
+        value: type,      // The value to match (e.g., 'Project', 'Dashboard')
+      }
+      : undefined;
+
     const projects = await getDatabase(
       process.env.NOTION_DATABASE_ID!,
-      type && type !== 'ALL' 
-        ? {
-            property: 'Type',
-            type: 'select',
-            value: type
-          }
-        : undefined
+      notionFilter // Pass the dynamically created filter to getDatabase
     );
 
     // Transform Notion data to match our Project interface
@@ -74,4 +79,4 @@ export async function GET(request: Request) {
     console.error('Error fetching projects:', error);
     return new NextResponse('Error fetching projects', { status: 500 });
   }
-} 
+}
