@@ -2,8 +2,8 @@
 module.exports = {
     darkMode: ['class'],
     content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
@@ -121,6 +121,14 @@ module.exports = {
       });
     },
   ],
+  safelist: [
+    'bg-blue-50',
+    'border-blue-200',
+    'text-blue-700',
+    'text-blue-600',
+    'hover:bg-blue-100',
+    'hover:border-blue-300'
+  ]
 } 
 
 

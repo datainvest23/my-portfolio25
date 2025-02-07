@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SparklesIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon, PaperAirplaneIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from 'react-markdown';
 
 type Message = {
   id: string;
@@ -15,28 +16,95 @@ type Message = {
 interface ChatWindowProps {
   threadId: string;
   initialMessage?: string | null;
+  interestedProjects?: Array<{
+    project_name: string;
+    project_details?: {
+      shortDescription?: string;
+      type?: string;
+    };
+  }>;
 }
 
-export function ChatWindow({ threadId, initialMessage }: ChatWindowProps) {
+export function ChatWindow({ threadId, initialMessage, interestedProjects }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [currentStreamedMessage, setCurrentStreamedMessage] = useState("");
+  const [isInitializing, setIsInitializing] = useState(false);
+  const initializationRef = useRef(false);
 
+  // Handle initial message and context initialization
   useEffect(() => {
-    // Initial personalized message
-    if (initialMessage) {
-      setMessages([
-        {
+    const initialize = async () => {
+      // Only proceed if we haven't initialized yet
+      if (initializationRef.current) return;
+      initializationRef.current = true;
+
+      // Set initial greeting
+      if (initialMessage) {
+        setMessages([{
           id: "welcome",
           role: "assistant",
           content: initialMessage,
           createdAt: new Date(),
-        },
-      ]);
-    }
-  }, [initialMessage]);
+        }]);
+      }
+
+      // If we have interested projects, initialize context
+      if (interestedProjects?.length) {
+        // Add loading message after a brief delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setMessages(prev => [...prev, {
+          id: "loading",
+          role: "assistant",
+          content: "⏳ Analyzing your interests...",
+          createdAt: new Date(),
+        }]);
+
+        try {
+          const projectNames = interestedProjects.map(p => p.project_name).join(", ");
+          const response = await fetch("/api/chat/context", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              threadId,
+              projectNames,
+              projects: interestedProjects 
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.details || 'Failed to initialize context');
+          }
+          
+          if (data.message) {
+            setMessages(prev => prev.filter(m => m.id !== "loading").concat({
+              id: Date.now().toString(),
+              role: "assistant",
+              content: data.message,
+              createdAt: new Date(),
+            }));
+          }
+        } catch (error) {
+          console.error("Error initializing context:", error);
+          setMessages(prev => prev.filter(m => m.id !== "loading").concat({
+            id: "error",
+            role: "assistant",
+            content: `I apologize, but I encountered an issue while loading the project information. ${error instanceof Error ? error.message : ''} Please try refreshing the page.`,
+            createdAt: new Date(),
+          }));
+        }
+      }
+    };
+
+    initialize();
+  }, [threadId, initialMessage, interestedProjects]); // Include threadId in dependencies
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,6 +116,8 @@ export function ChatWindow({ threadId, initialMessage }: ChatWindowProps) {
 
     try {
       setIsLoading(true);
+      setIsStreaming(true);
+      setCurrentStreamedMessage("");
 
       // Add user message
       const userMessage: Message = {
@@ -56,9 +126,9 @@ export function ChatWindow({ threadId, initialMessage }: ChatWindowProps) {
         content: input,
         createdAt: new Date(),
       };
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages(prev => [...prev, userMessage]);
 
-      // Send message to API
+      // Stream the response
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,129 +136,177 @@ export function ChatWindow({ threadId, initialMessage }: ChatWindowProps) {
       });
 
       if (!response.ok) throw new Error("Failed to send message");
+      if (!response.body) throw new Error("No response body");
 
-      const data = await response.json();
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
 
-      // Add assistant response
+      let fullMessage = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        fullMessage += chunk;
+        setCurrentStreamedMessage(fullMessage); // Update with full message so far
+      }
+
+      // Add complete assistant response only once streaming is done
       const assistantMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: data.response,
+        content: fullMessage,
         createdAt: new Date(),
       };
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
+      setCurrentStreamedMessage(""); // Clear streaming message
+
     } catch (error) {
       console.error("Chat error:", error);
-      // Add error message
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
         content: "Sorry, I encountered an error. Please try again.",
         createdAt: new Date(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      setInput(""); // Clear input field
+      setIsStreaming(false);
+      setInput("");
     }
   };
 
-  return (
-    <div className="flex flex-col min-h-[600px] bg-gray-50">
-      {/* Chat Header */}
-      <div className="px-6 py-4 border-b">
-        <h3 className="text-lg font-semibold text-gray-900">Project Assistant</h3>
-        <p className="text-sm text-gray-500">Ask me anything about the projects</p>
-      </div>
+  // Modify the message rendering to handle markdown properly
+  const renderMessage = (message: Message) => (
+    <div
+      className={cn(
+        "rounded-2xl px-4 py-2 text-sm shadow-sm",
+        message.role === "assistant"
+          ? "bg-white border border-gray-200 text-gray-800 prose prose-sm max-w-none prose-headings:mt-2 prose-headings:mb-1 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5"
+          : "bg-blue-600 text-white"
+      )}
+    >
+      {message.id === "loading" ? (
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent" />
+          <span>{message.content}</span>
+        </div>
+      ) : message.role === "assistant" && message.id !== "welcome" ? (
+        <TypewriterText text={message.content} />
+      ) : (
+        <ReactMarkdown
+          components={{
+            strong: ({ children }) => <span className="font-semibold text-blue-700">{children}</span>,
+            h3: ({ children }) => <h3 className="text-base font-semibold mt-4 mb-2">{children}</h3>,
+            ul: ({ children }) => <ul className="mt-2 mb-2 list-disc pl-4">{children}</ul>,
+            li: ({ children }) => <li className="mb-1">{children}</li>,
+          }}
+        >
+          {message.content}
+        </ReactMarkdown>
+      )}
+    </div>
+  );
 
+  // TypewriterText component with markdown support
+  const TypewriterText = ({ text }: { text: string }) => {
+    const [displayText, setDisplayText] = useState("");
+    
+    useEffect(() => {
+      let index = 0;
+      const timer = setInterval(() => {
+        if (index < text.length) {
+          setDisplayText(prev => prev + text[index]);
+          index++;
+        } else {
+          clearInterval(timer);
+        }
+      }, 20);
+
+      return () => clearInterval(timer);
+    }, [text]);
+
+    return (
+      <ReactMarkdown
+        components={{
+          strong: ({ children }) => <span className="font-semibold text-blue-700">{children}</span>,
+          h3: ({ children }) => <h3 className="text-base font-semibold mt-4 mb-2">{children}</h3>,
+          ul: ({ children }) => <ul className="mt-2 mb-2 list-disc pl-4">{children}</ul>,
+          li: ({ children }) => <li className="mb-1">{children}</li>,
+        }}
+      >
+        {displayText}
+      </ReactMarkdown>
+    );
+  };
+
+  return (
+    <div className="flex flex-col h-full">
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
         {messages.map((message, index) => (
           <div
             key={index}
             className={cn(
-              "flex items-start gap-3 max-w-[85%]",
+              "flex items-start gap-3 max-w-[80%]",
               message.role === "assistant" ? "self-start" : "self-end flex-row-reverse"
             )}
           >
             {/* Avatar */}
             {message.role === "assistant" && (
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                 <SparklesIcon className="h-4 w-4 text-blue-600" />
               </div>
             )}
 
             {/* Message Bubble */}
-            <div
-              className={cn(
-                "rounded-2xl px-4 py-2 text-sm",
-                message.role === "assistant"
-                  ? "bg-gray-100 text-gray-800"
-                  : "bg-blue-600 text-white"
-              )}
-            >
-              {message.content}
-            </div>
+            {renderMessage(message)}
           </div>
         ))}
 
-        {isTyping && (
-          <div className="flex items-center gap-2 text-gray-500">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <SparklesIcon className="h-4 w-4 text-blue-600 animate-pulse" />
+        {/* Streaming message */}
+        {isStreaming && currentStreamedMessage && (
+          <div className="flex items-start gap-3 max-w-[80%] self-start">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <SparklesIcon className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="bg-gray-100 rounded-full px-4 py-2">
-              <span className="animate-pulse">Typing...</span>
+            <div className="rounded-2xl px-4 py-2 text-sm shadow-sm bg-white border border-gray-200 text-gray-800 prose prose-sm max-w-none">
+              <ReactMarkdown>{currentStreamedMessage}</ReactMarkdown>
             </div>
           </div>
         )}
 
-        <div ref={messagesEndRef}></div>
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t">
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+      {/* Input Area with arrow icon button */}
+      <div className="p-4 border-t bg-white">
+        <form onSubmit={handleSubmit} className="relative flex items-center">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 px-4 py-2 rounded-full border border-gray-200 
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 pr-12 rounded-full border border-gray-200 
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+              text-sm bg-white"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
             className={cn(
-              "flex items-center justify-center px-4 py-2 rounded-full",
-              "bg-blue-600 text-white hover:bg-blue-700 transition-colors",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "absolute right-2 p-2 rounded-full",
+              "bg-blue-600 hover:bg-blue-700 transition-colors",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "flex items-center justify-center",
+              "shadow-sm"
             )}
           >
             {isLoading ? (
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-              </svg>
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
             ) : (
-              <PaperAirplaneIcon className="h-5 w-5" />
+              <ArrowRightIcon className="h-5 w-5 text-white" />
             )}
           </button>
         </form>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { HomeIcon, BookmarkIcon, ChatBubbleLeftRightIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, BookmarkIcon, ChatBubbleLeftRightIcon, Bars3Icon, XMarkIcon, FolderIcon, ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/providers/SupabaseProvider";
 import bcrypt from "bcryptjs";
@@ -61,18 +61,13 @@ export default function TopNav() {
     {
       label: "Portfolio",
       href: "/",
-      icon: <HomeIcon className="h-5 w-5" />,
-    },
-    {
-      label: "Interested",
-      href: "/interested",
-      icon: <BookmarkIcon className="h-5 w-5" />,
-      highlight: true,
+      icon: FolderIcon,
     },
     {
       label: "Conversation",
       href: "/conversation",
-      icon: <ChatBubbleLeftRightIcon className="h-5 w-5" />,
+      icon: ChatBubbleOvalLeftEllipsisIcon,
+      highlight: true,
     },
   ];
 
@@ -80,7 +75,7 @@ export default function TopNav() {
     <header className="sticky top-0 z-50 bg-white border-b">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Left: User Name or Logo (always visible) */}
+          {/* Left: User Name or Logo */}
           <Link href="/" className="flex items-center gap-3">
             <div className="h-8 w-8 bg-black rounded-lg" />
             <span className="font-medium text-sm">
@@ -88,30 +83,37 @@ export default function TopNav() {
             </span>
           </Link>
 
-          {/* Center: Desktop Menu (hidden on mobile) */}
+          {/* Center: Desktop Menu */}
           {!isMobile && (
             <nav className="flex-grow">
               <ul className="flex items-center justify-center gap-2">
-                {links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={cn(
-                        "flex items-center gap-2 px-4 py-2 rounded-lg transition-all",
-                        "hover:bg-gray-50",
-                        link.highlight && "text-blue-600"
-                      )}
-                    >
-                      <span className="flex-shrink-0">{link.icon}</span>
-                      <span className="text-sm font-medium">{link.label}</span>
-                    </Link>
-                  </li>
-                ))}
+                {links.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className={cn(
+                          "nav-link",
+                          link.highlight ? "nav-link-highlighted" : "nav-link-default"
+                        )}
+                      >
+                        <Icon 
+                          className={cn(
+                            "nav-icon",
+                            link.highlight ? "nav-icon-highlighted" : ""
+                          )}
+                        />
+                        <span className="text-sm font-medium">{link.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
           )}
 
-          {/* Right-side Text (always visible) */}
+          {/* Right side text */}
           {!isMobile && (
             <div className="flex-shrink-0 ml-8">
               <span className="font-bold text-gray-800">
@@ -120,7 +122,7 @@ export default function TopNav() {
             </div>
           )}
 
-          {/* Hamburger Menu Button (only visible on mobile) */}
+          {/* Mobile menu button */}
           {isMobile && (
             <button
               onClick={toggleMobileMenu}
@@ -136,26 +138,33 @@ export default function TopNav() {
           )}
         </div>
 
-        {/* Mobile Menu Content (only visible on mobile and when open) */}
+        {/* Mobile menu */}
         {isMobile && isMobileMenuOpen && (
           <div className="border-t py-4">
             <ul className="flex flex-col gap-2">
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-3 rounded-lg transition-all",
-                      "hover:bg-gray-50",
-                      link.highlight && "text-blue-600"
-                    )}
-                  >
-                    <span className="flex-shrink-0">{link.icon}</span>
-                    <span className="text-sm font-medium">{link.label}</span>
-                  </Link>
-                </li>
-              ))}
+              {links.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        "nav-link",
+                        link.highlight ? "nav-link-highlighted" : "nav-link-default"
+                      )}
+                    >
+                      <Icon 
+                        className={cn(
+                          "nav-icon",
+                          link.highlight ? "nav-icon-highlighted" : ""
+                        )}
+                      />
+                      <span className="text-sm font-medium">{link.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}

@@ -1,111 +1,33 @@
+import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { StreamingTextResponse, OpenAIStream } from 'ai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Use server-side environment variable
-});
-
-async function cancelActiveRuns(threadId: string) {
-  try {
-    const runs = await openai.beta.threads.runs.list(threadId);
-    const activeRuns = runs.data.filter(run => 
-      ['queued', 'in_progress', 'requires_action'].includes(run.status)
-    );
-
-    for (const run of activeRuns) {
-      await openai.beta.threads.runs.cancel(threadId, run.id);
-    }
-  } catch (error) {
-    console.error('Error canceling active runs:', error);
-  }
-}
+const openai = new OpenAI();
 
 export async function POST(request: Request) {
   try {
-    const { threadId, message, isSystemMessage, requiresResponse } = await request.json();
+    const { threadId, message } = await request.json();
 
-    if (!threadId || !message) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    // Get the assistant
-    const assistants = await openai.beta.assistants.list();
-    const assistant = assistants.data.find(
-      (ast) => ast.name === "Portfolio Assistant"
-    );
-
-    if (!assistant) {
-      throw new Error('Assistant not found');
-    }
-
-    // Cancel any active runs before proceeding
-    await cancelActiveRuns(threadId);
-
-    // Send the message to the thread
+    // Add the user's message to the thread
     await openai.beta.threads.messages.create(threadId, {
-      role: "user", // OpenAI doesn't support system messages in threads
-      content: message,
+      role: "user",
+      content: message
     });
 
     // Create a run
     const run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: assistant.id,
+      assistant_id: process.env.OPENAI_ASSISTANT_ID!,
     });
 
-    if (!requiresResponse && isSystemMessage) {
-      return NextResponse.json({ 
-        success: true,
-        message: 'Context message sent successfully'
-      });
-    }
+    // Create a stream
+    const stream = OpenAIStream(await openai.beta.threads.runs.streamResponse(threadId, run.id));
 
-    // Wait for the run to complete
-    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-    let attempts = 0;
-    const maxAttempts = 30; // Maximum 30 seconds wait
+    // Return streaming response
+    return new StreamingTextResponse(stream);
 
-    while (runStatus.status !== 'completed' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-      attempts++;
-      
-      if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
-        throw new Error(`Run ${runStatus.status}`);
-      }
-    }
-
-    if (attempts >= maxAttempts) {
-      throw new Error('Request timed out waiting for assistant response');
-    }
-
-    // Get the assistant's response
-    const messages = await openai.beta.threads.messages.list(threadId);
-    const lastMessage = messages.data[0];
-
-    // Safely extract text content
-    const textContent = lastMessage.content.find(
-      content => content.type === 'text'
-    );
-
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('Unexpected response format');
-    }
-
-    return NextResponse.json({
-      id: lastMessage.id,
-      response: textContent.text.value,
-    });
   } catch (error) {
-    console.error('Chat API error:', error);
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Failed to process message',
-        details: error
-      },
-      { status: 500 }
-    );
+    console.error('Chat error:', error);
+    return NextResponse.json({ error: 'Failed to process chat' }, { status: 500 });
   }
 } 
