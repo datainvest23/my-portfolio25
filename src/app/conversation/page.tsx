@@ -31,36 +31,48 @@ export default function ConversationPage() {
   const [error, setError] = useState<string | null>(null);
   const [initialMessage, setInitialMessage] = useState<string | null>(null);
   const [interestedProjects, setInterestedProjects] = useState<InterestedItem[]>([]);
-
-  useEffect(() => {
-    async function fetchInterestedProjects() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return;
-
-      const { data: userInterests, error: interestsError } = await supabase
-        .from("user_interests")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false });
-
-      if (!interestsError && userInterests) {
-        setInterestedProjects(userInterests);
-      }
-    }
-
-    fetchInterestedProjects();
-  }, [supabase]);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     async function initializeChat() {
       try {
+        // Get user session and profile
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          throw new Error("No authenticated user");
+        }
+
+        // Get user name from metadata
+        const userName = session.user.user_metadata?.name || "there";
+        setUserName(userName);
+
+        // Get interested projects
+        const { data: userInterests, error: interestsError } = await supabase
+          .from("user_interests")
+          .select("*")
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false });
+
+        if (interestsError) throw interestsError;
+        setInterestedProjects(userInterests || []);
+
+        // Create personalized greeting
+        let greeting = `Hi ${userName}! `;
+        if (userInterests && userInterests.length > 0) {
+          greeting += `I see you're interested in ${userInterests.length} project${userInterests.length > 1 ? 's' : ''}: `;
+          greeting += userInterests.map(p => p.project_name).join(", ") + ". ";
+          greeting += "Feel free to ask me anything about these projects or explore other projects in the portfolio!";
+        } else {
+          greeting += "I'm here to help you explore the portfolio projects. What would you like to know about?";
+        }
+
+        // Create thread with context
         const thread = await createThread();
         setThreadId(thread.id);
-        setInitialMessage(
-          "Welcome! I'm here to help you explore the projects. Feel free to ask questions about any project that interests you."
-        );
+        setInitialMessage(greeting);
+
       } catch (error) {
-        console.error("Error creating thread:", error);
+        console.error("Error initializing chat:", error);
         setError("Failed to initialize chat");
       } finally {
         setIsLoading(false);
@@ -68,7 +80,7 @@ export default function ConversationPage() {
     }
 
     initializeChat();
-  }, []);
+  }, [supabase]);
 
   if (error) {
     return (

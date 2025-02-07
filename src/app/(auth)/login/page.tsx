@@ -68,29 +68,17 @@ export default function LoginPage() {
       setLoading(true);
 
       try {
-        // Try to sign in first using the universal password
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
-          password: UNIVERSAL_PASSWORD,
+          password: Math.random().toString(36).slice(-8),
+          options: {
+            data: { name },
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
 
-        // If sign in fails, try to sign up with the same universal password
-        if (signInError && signInError.message.includes('Invalid login credentials')) {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email,
-            password: UNIVERSAL_PASSWORD,
-            options: {
-              data: { name },
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
-            },
-          });
-
-          if (signUpError) throw signUpError;
-        } else if (signInError) {
-          // If it's any other error, throw it
-          throw signInError;
-        }
-
+        if (signUpError) throw signUpError;
+        
         setTypedMessage("Perfect! You're all set. Redirecting you to the portfolio.".split(""));
         setStep("complete");
 

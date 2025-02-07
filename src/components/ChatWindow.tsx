@@ -25,15 +25,17 @@ export function ChatWindow({ threadId, initialMessage }: ChatWindowProps) {
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
-    // Initial welcome message
-    setMessages([
-      {
-        id: "welcome",
-        role: "assistant",
-        content: initialMessage || "Hi! I'm your AI assistant. How can I help you today?",
-        createdAt: new Date(),
-      },
-    ]);
+    // Initial personalized message
+    if (initialMessage) {
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          content: initialMessage,
+          createdAt: new Date(),
+        },
+      ]);
+    }
   }, [initialMessage]);
 
   useEffect(() => {

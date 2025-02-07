@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import Script from 'next/script';
 import Link from 'next/link';
+import { ArrowLeftIcon, HandThumbUpIcon } from '@heroicons/react/24/outline';
 
 interface PageProps {
   params: {
@@ -189,7 +190,26 @@ export default async function ProjectPage({ params }: PageProps) {
             {/* Sidebar */}
             <div className="lg:col-span-1">
               <div className="sticky top-20 space-y-6">
-                <InterestButton project={{ id: project.id, name: projectName, imageUrl: projectCover, shortDescription: projectDescription, type: project.properties?.Type?.select?.name, tags: projectTechnologies, slug }} />
+                {/* Back to Portfolio Button */}
+                <Link 
+                  href="/"
+                  className="group w-full flex items-center gap-2 px-4 py-3 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow"
+                >
+                  <ArrowLeftIcon className="h-4 w-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
+                  <span className="font-bold text-gray-900">Back to Portfolio</span>
+                </Link>
+
+                <InterestButton 
+                  project={{ 
+                    id: project.id, 
+                    name: projectName, 
+                    imageUrl: projectCover, 
+                    shortDescription: projectDescription, 
+                    type: project.properties?.Type?.select?.name, 
+                    tags: projectTechnologies, 
+                    slug 
+                  }} 
+                />
                 <TableOfContents headings={headings} />
               </div>
             </div>

@@ -6,6 +6,8 @@ import { toast } from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { BookmarkIcon } from "@heroicons/react/24/outline";
 import { Spinner } from "@/components/Spinner";
+import { HandThumbUpIcon } from '@heroicons/react/24/outline';
+import { HandThumbUpIcon as HandThumbUpIconSolid } from '@heroicons/react/24/solid';
 
 interface ProjectDetails {
   id: string;
@@ -91,7 +93,7 @@ export function InterestButton({ project }: { project: ProjectDetails }) {
       {loading ? (
         <Spinner className="h-5 w-5" />
       ) : (
-        <BookmarkIcon 
+        <HandThumbUpIcon 
           className={cn(
             "h-5 w-5",
             isInterested ? "text-emerald-500" : "text-blue-500"
